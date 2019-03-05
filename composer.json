@@ -1,0 +1,12 @@
+{
+    "name": "itk-os2display/poster-bundle",
+    "description": "Os2Display posters",
+    "type": "symfony-bundle",
+    "require": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Os2Display\\PosterBundle\\": ""
+        }
+    }
+}
