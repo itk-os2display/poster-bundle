@@ -22,5 +22,26 @@ class Os2DisplayPosterExtension extends Os2DisplayBaseExtension
         $this->dir = __DIR__;
 
         parent::load($configs, $container);
+
+        $configuration = new Configuration();
+        $config = $this->processConfiguration($configuration, $configs);
+        $def = $container->getDefinition('os2display.poster.service');
+        $def->replaceArgument(0, $config['cron_interval']);
+        $def->replaceArgument(1, $config['providers']);
+
+        foreach ($config['providers'] as $providerId => $provider) {
+            if (!$providerId) {
+                continue;
+            }
+
+            $def = $container->getDefinition('os2display.poster.' . $providerId);
+
+            if (!isset($provider['url'])) {
+                $def->replaceArgument(0, false);
+            }
+
+            $def->replaceArgument(0, true);
+            $def->replaceArgument(1, $provider['url']);
+        }
     }
 }

@@ -1,8 +1,12 @@
 services:
     os2display.poster.service:
         class: Os2Display\PosterBundle\Service\PosterService
-#        arguments: ['@service_container']
-#        tags:
-#        - { name: kernel.event_listener, event: os2display.core.pre_push_channels, method: prePushChannels }
-#        - { name: kernel.event_listener, event: os2display.core.pre_push_channel, method: prePushChannel }
-#        - { name: kernel.event_listener, event: os2display.core.post_push_channels, method: postPushChannels }
+        arguments: [900, [], '@event_dispatcher']
+
+    os2display.poster.eventdatabasen:
+        class: Os2Display\PosterBundle\Service\EventdatabasenIntegration
+        arguments: [false, '']
+        tags:
+            - { name: kernel.event_listener, event: os2display.poster.get_event, method: getEvent }
+            - { name: kernel.event_listener, event: os2display.poster.get_events, method: getEvents }
+            - { name: kernel.event_listener, event: os2display.poster.get_occurrence, method: getOccurrence }

@@ -11,5 +11,5 @@ os2display_poster_event:
     defaults: { _controller: Os2DisplayPosterBundle:Poster:event }
 
 os2display_poster_occurrence:
-    path:     /api/os2display_poster/occurrences/{id}
+    path:     /api/os2display_poster/occurrence
     defaults: { _controller: Os2DisplayPosterBundle:Poster:occurrence }

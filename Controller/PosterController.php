@@ -47,8 +47,10 @@ class PosterController extends Controller
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function occurrenceAction(Request $request, $id)
+    public function occurrenceAction(Request $request)
     {
-        return new JsonResponse($this->get('os2display.poster.service')->getOccurrence($id));
+        $occurrenceId = $request->query->get('occurrenceId');
+
+        return new JsonResponse($this->get('os2display.poster.service')->getOccurrence($occurrenceId));
     }
 }

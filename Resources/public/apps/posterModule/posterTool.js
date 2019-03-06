@@ -34,17 +34,17 @@ angular.module('posterModule').directive('posterTool', [
                 };
 
                 scope.clickOccurrence = function (occurrence) {
-                    scope.slide.options.data = {
-                        eventId: scope.displayEvent['@id'],
-                        occurrenceId: occurrence['@id'],
-                        name: scope.displayEvent.name,
-                        image: scope.displayEvent.image,
-                        description: scope.displayEvent.description,
-                        excerpt: scope.displayEvent.excerpt,
-                        startDate: occurrence.startDate,
-                        endDate: occurrence.endDate,
-                        url: scope.displayEvent.url
-                    };
+                    $http.get('/api/os2display_poster/occurrence', {
+                        params: {
+                            occurrenceId: occurrence['@id']
+                        }
+                    }).then(
+                        function success(response) {
+                            $timeout(function () {
+                                scope.slide.options.data = response.data;
+                            });
+                        }
+                    );
 
                     scope.close();
                 };
