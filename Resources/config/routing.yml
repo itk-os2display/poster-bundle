@@ -1,0 +1,15 @@
+os2display_poster_test:
+    path:     /api/os2display_poster/test
+    defaults: { _controller: Os2DisplayPosterBundle:Poster:test }
+
+os2display_poster_events:
+    path:     /api/os2display_poster/events
+    defaults: { _controller: Os2DisplayPosterBundle:Poster:events }
+
+os2display_poster_event:
+    path:     /api/os2display_poster/events/{id}
+    defaults: { _controller: Os2DisplayPosterBundle:Poster:event }
+
+os2display_poster_occurrence:
+    path:     /api/os2display_poster/occurrences/{id}
+    defaults: { _controller: Os2DisplayPosterBundle:Poster:occurrence }

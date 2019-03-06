@@ -1,0 +1,65 @@
+<div class="edit-menu--background" role="banner">
+  <div class="edit-menu--background-inner">
+    <div class="edit-menu--toggle-icon" data-ng-click="close()">
+      <div class="svg-clickable">
+        <object data="bundles/os2displayadmin/images/svg/cancel.svg"
+                type="image/svg+xml">
+        </object>
+      </div>
+    </div>
+    <div class="edit-menu--background-page">
+      <div class="edit-menu--background-page-inner">
+        <div ng-if="slide.options.data">
+          <div>{{slide.options.data.name}}</div>
+          <div>{{slide.options.data.eventId}}</div>
+          <div>{{slide.options.data.occurrenceId}}</div>
+
+          <button ng-click="refreshEvent()">Refresh</button>
+        </div>
+
+        <form id="searchForm" ng-submit="search()">
+          <input type="text" ng-model="searchName" placeholder="name">
+          <input type="text" ng-model="searchUrl" placeholder="url">
+          <input type="submit" value="Søg">
+        </form>
+
+        <table class="table" ng-if="events && !displayEvent">
+          <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Titel</th>
+            <th scope="col">Occurrences</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr ng-repeat="event in events" ng-click="clickEvent(event)">
+            <td>{{event['@id']}}</td>
+            <td>{{event.name}}</td>
+            <td>{{event.occurrences.length }}</td>
+          </tr>
+          </tbody>
+        </table>
+
+        <div ng-if="displayEvent">
+          <h3>{{ displayEvent.name }}</h3>
+
+          <table class="table">
+            <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Occurrence</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="occurrence in displayEvent.occurrences" ng-click="clickOccurrence(occurrence)">
+              <td>{{occurrence['@id']}}</td>
+              <td>{{occurrence.name}}</td>
+              <td>{{occurrence.occurrences.length }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
