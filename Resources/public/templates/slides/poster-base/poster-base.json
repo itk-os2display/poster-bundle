@@ -25,6 +25,20 @@
     {
       "name": "Plakat",
       "id": "poster-tool"
+    },
+    {
+      "name": "Logo",
+      "id": "itk-media-picker",
+      "config": {
+        "fields": [
+          {
+            "field": "logo_image",
+            "name": "Logo",
+            "media_type": "image",
+            "description": "Logo vises nederst til højre"
+          }
+        ]
+      }
     }
   ]
 }

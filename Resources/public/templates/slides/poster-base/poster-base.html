@@ -1,6 +1,19 @@
-<div>
-  <img data-ng-src="{{ikSlide.options.data.image}}">
-  <h1>{{ikSlide.options.data.name}}</h1>
-  <p><strong>{{ikSlide.options.data.startDate}}</strong></p>
-  <p>{{ikSlide.options.data.description}}</p>
+<div class="poster-base" data-ng-style="{'font-size': theStyle.fontsize, 'width': theStyle.width, 'height': theStyle.height }">
+    <div class="tpl-image-area" data-ng-style="{'background-image': 'url(' + ikSlide.options.data.image + ')'}">
+    </div>
+    <div class="tpl-header-area">
+        <div class="tpl-header-area-center">
+            <h1>{{ikSlide.options.data.name}}</h1>
+            <p class="lead">{{ikSlide.options.data.excerpt}}</p>
+        </div>
+    </div>
+    <div class="tpl-info-area">
+        <p class="tpl-info-area-date">{{ikSlide.options.data.startDate | date:'d. MMMM yyyy'}}</p>
+        <p class="tpl-info-area-time">{{ikSlide.options.data.startDate | date:'HH:mm'}} - {{ikSlide.options.data.endDate | date:'HH:mm'}}</p>
+        <p class="tpl-info-area-ticket">Gratis billet via <a href="#">aakb.dk</a></p>
+        <p class="tpl-info-area-moreinfo">Læs mere på <a href="#">{{ikSlide.options.data.url}}</a></p>
+    </div>
+    <div class="tpl-logo-area">
+        <img data-ng-if="ikSlide.options.logo_image !== null" data-ng-src="{{ikSlide.media[ikSlide.options.logo_image].image ? ikSlide.media[ikSlide.options.logo_image].image : ikSlide.media[ikSlide.options.logo_image].urls.default_landscape }}">
+    </div>
 </div>
