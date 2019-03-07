@@ -19,12 +19,18 @@
     "height": "1080"
   },
   "empty_options": {
-    "fontsize": 16
+    "fontsize": 16,
+    "data": {},
+    "overrides": {}
   },
   "tools": [
     {
       "name": "Plakat",
       "id": "poster-tool"
+    },
+    {
+      "name": "Overskrivninger",
+      "id": "poster-edit-texts-tool"
     },
     {
       "name": "Logo",
