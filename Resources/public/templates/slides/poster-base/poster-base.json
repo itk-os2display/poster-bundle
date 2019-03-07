@@ -34,17 +34,8 @@
     },
     {
       "name": "Logo",
-      "id": "itk-media-picker",
-      "config": {
-        "fields": [
-          {
-            "field": "logo_image",
-            "name": "Logo",
-            "media_type": "image",
-            "description": "Logo vises nederst til højre"
-          }
-        ]
-      }
+      "id": "logo-editor",
+      "template": "bundles/os2displaydefaulttemplate/apps/toolsModule/fixed-logo-editor.html"
     }
   ]
 }

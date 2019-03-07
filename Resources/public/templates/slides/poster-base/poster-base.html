@@ -31,6 +31,7 @@
         <p class="tpl-info-area-moreinfo" ng-if="ikSlide.options.overrides.readMoreText">{{ikSlide.options.overrides.readMoreText}}</p>
     </div>
     <div class="tpl-logo-area">
-        <img data-ng-if="ikSlide.options.logo_image !== null" data-ng-src="{{ikSlide.media[ikSlide.options.logo_image].image ? ikSlide.media[ikSlide.options.logo_image].image : ikSlide.media[ikSlide.options.logo_image].urls.default_landscape }}">
+        <!-- @TODO: Move inline style to stylesheet -->
+        <img data-ng-if="ikSlide.currentLogo" data-ng-src="{{ikSlide.currentLogo}}" style="max-height: 45px" />
     </div>
 </div>
