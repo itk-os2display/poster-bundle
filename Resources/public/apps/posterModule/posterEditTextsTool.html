@@ -1,0 +1,33 @@
+<div class="edit-menu--background" role="banner">
+  <div class="edit-menu--background-inner">
+    <div class="edit-menu--toggle-icon" data-ng-click="close()">
+      <div class="svg-clickable">
+        <object data="bundles/os2displayadmin/images/svg/cancel.svg"
+                type="image/svg+xml">
+        </object>
+      </div>
+    </div>
+    <div class="edit-menu--background-page">
+      <div class="edit-menu--background-page-inner">
+        <h3>Overskrift</h3>
+        <div>{{slide.options.data.name}}</div>
+        <textarea placeholder="Overskrift overskrivning" ng-model="slide.options.overrides.name"></textarea>
+
+        <h3>Manchet</h3>
+        <div>{{slide.options.data.excerpt}}</div>
+        <textarea placeholder="Manchet overskrivning" ng-model="slide.options.overrides.excerpt"></textarea>
+
+        <h3>Billetpris</h3>
+        <div>{{slide.options.data.ticketPriceRange}}</div>
+        <textarea placeholder="Billetpris overskrivning" ng-model="slide.options.overrides.ticketPriceRange"></textarea>
+
+        <h3>Læs mere tekst</h3>
+        <div>{{slide.options.data.readMoreText}}</div>
+        <textarea placeholder="Læs mere overskrivning" ng-model="slide.options.overrides.readMoreText"></textarea>
+
+        <h3>Skjul tidspunkt</h3>
+        <input type="checkbox" ng-model="slide.options.overrides.hideTime">
+      </div>
+    </div>
+  </div>
+</div>

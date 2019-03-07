@@ -9,6 +9,7 @@ modules:
         files:
             - bundles/os2displayposter/apps/posterModule/module.js
             - bundles/os2displayposter/apps/posterModule/posterTool.js
+            - bundles/os2displayposter/apps/posterModule/posterEditTextsTool.js
 
 apps:
     # Inject into administration app to enable access to tool from admin.
