@@ -95,3 +95,8 @@
     padding-top: 0;
     display: grid;
 }
+
+.poster-base .tpl-logo-img {
+    max-height: 150%;
+    margin: 0 0 0 auto;
+}
