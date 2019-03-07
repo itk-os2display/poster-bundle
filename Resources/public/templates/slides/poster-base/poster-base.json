@@ -11,7 +11,7 @@
     "js": "bundles/os2displaydefaulttemplate/templates/js/baseSlide.js"
   },
   "orientation": "landscape",
-  "slide_type": "base",
+  "slide_type": "poster-base",
   "media_type": "image",
   "script_id": "base",
   "ideal_dimensions": {
