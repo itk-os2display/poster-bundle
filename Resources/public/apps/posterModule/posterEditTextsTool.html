@@ -7,26 +7,60 @@
         </object>
       </div>
     </div>
-    <div class="edit-menu--background-page">
-      <div class="edit-menu--background-page-inner">
-        <h3>Overskrift</h3>
-        <div>{{slide.options.data.name}}</div>
-        <textarea placeholder="Overskrift overskrivning" ng-model="slide.options.overrides.name"></textarea>
-
-        <h3>Manchet</h3>
-        <div>{{slide.options.data.excerpt}}</div>
-        <textarea placeholder="Manchet overskrivning" ng-model="slide.options.overrides.excerpt"></textarea>
-
-        <h3>Billetpris</h3>
-        <div>{{slide.options.data.ticketPriceRange}}</div>
-        <textarea placeholder="Billetpris overskrivning" ng-model="slide.options.overrides.ticketPriceRange"></textarea>
-
-        <h3>Læs mere tekst</h3>
-        <div>{{slide.options.data.readMoreText}}</div>
-        <textarea placeholder="Læs mere overskrivning" ng-model="slide.options.overrides.readMoreText"></textarea>
-
-        <h3>Skjul tidspunkt</h3>
-        <input type="checkbox" ng-model="slide.options.overrides.hideTime">
+    <div class="container edit-menu--background-page">
+      <div class="edit-menu--background-page-inner" style="padding-top: 1em;">
+        <div class="row">
+          <div class="col">
+            <h1 class="mt-2 text-left">Overskrivninger</h1>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <h2 class="text-left">Overskrift</h2>
+            <div class="form-group">
+              <label class="text-left" for="slide.options.overrides.name">{{slide.options.data.name}}</label>
+              <textarea class="form-control" rows="3" placeholder="Overskrift overskrivning" ng-model="slide.options.overrides.name"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <h2 class="text-left">Manchet</h2>
+            <div class="form-group">
+              <label class="text-left" for="slide.options.overrides.excerpt">{{slide.options.data.excerpt}}</label>
+              <textarea class="form-control" rows="3" placeholder="Manchet overskrivning" ng-model="slide.options.overrides.excerpt"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="row" ng-if="slide.options.data.ticketPriceRange">
+          <div class="col">
+            <h2 class="text-left">Billetpris</h2>
+            <div class="form-group">
+              <label class="text-left" for="slide.options.overrides.ticketPriceRange">{{slide.options.data.ticketPriceRange}}</label>
+              <textarea class="form-control" rows="3" placeholder="Billetpris overskrivning" ng-model="slide.options.overrides.ticketPriceRange"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <h2 class="text-left">Læs mere tekst</h2>
+            <div class="form-group">
+              <label class="text-left" for="slide.options.overrides.readMoreText">{{slide.options.data.readMoreText}}</label>
+              <textarea class="form-control" rows="3" placeholder="Læs mere overskrivning" ng-model="slide.options.overrides.readMoreText"></textarea>
+              </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <h2 class="text-left">Skjul tidspunkt</h2>
+            <div class="form-check text-left">
+              <input class="form-check-input" type="checkbox" ng-model="slide.options.overrides.hideTime">
+              <label  class="form-check-label" for="slide.options.overrides.hideTime">
+                Skjul tidspunkt
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

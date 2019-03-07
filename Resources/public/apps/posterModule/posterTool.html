@@ -3,61 +3,120 @@
     <div class="edit-menu--toggle-icon" data-ng-click="close()">
       <div class="svg-clickable">
         <object data="bundles/os2displayadmin/images/svg/cancel.svg"
-                type="image/svg+xml">
+          type="image/svg+xml">
         </object>
       </div>
     </div>
-    <div class="edit-menu--background-page">
-      <div class="edit-menu--background-page-inner">
-        <div ng-if="slide.options.data">
-          <div>{{slide.options.data.name}}</div>
-          <div>{{slide.options.data.eventId}}</div>
-          <div>{{slide.options.data.occurrenceId}}</div>
-
-          <button ng-click="refreshEvent()">Refresh</button>
+    <div class="container edit-menu--background-page">
+      <div class="edit-menu--background-page-inner" style="padding-top: 1em;">
+        <div class="row">
+          <div class="col">
+            <h1 class="mt-2 text-left">Find en begivenhed til din plakat</h1>
+          </div>
+        </div>
+        <div ng-if="slide.options.data" class="row border rounded-sm text-left
+        mb-3 pt-3 pb-3">
+          <div class="col-2">
+            <img src="{{slide.options.data.image}}" alt="{{slide.options.data.name}}" class="img-fluid">
+          </div>
+          <div class="col-10">
+            <button class="btn btn-success btn-sm btn-inline float-right" ng-click="refreshEvent()" name="refreshContent">Opdater indhold</button>
+            <p>Valgt begivenhed:</p>
+            <p>
+              <strong><span>{{slide.options.data.name}}</span> - <span>{{slide.options.data.startDate | date}}</span></strong>
+            </p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <h2 class="mb-3 text-left">Søg begivenhed</h2>
+          </div>
+          <div class="col-12">
+            <form id="searchForm" ng-submit="search()">
+              <div class="form-row">
+                <div class="col-2">
+                  <div class="form-group">
+                    <label class="sr-only" for="typeSelect">Vælg type</label>
+                    <select class="form-control" name="typeSelect" ng-model="typeSelect">
+                      <option selected value="searchName">Begivenhedsnavn</option>
+                      <option value="searchUrl">Begivenhedens URL</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-8">
+                  <div class="form-group" ng-if="typeSelect == 'searchName'">
+                    <label for="searchName" class="sr-only">Søg efter begivenhed</label>
+                    <input class="form-control" type="text" ng-model="searchName" placeholder="Begivenhedsnavn">
+                  </div>
+                  <div class="form-group" ng-if="typeSelect == 'searchUrl'">
+                    <label for="searchUrl" class="sr-only">Link til begivenhed</label>
+                    <input class="form-control" type="text" ng-model="searchUrl" placeholder="Begivenhedens URL">
+                  </div>
+                </div>
+                <div class="col-2">
+                  <input class="btn btn-primary btn-block" type="submit" value="Søg" ng-click="showSpinner=true">
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
 
-        <form id="searchForm" ng-submit="search()">
-          <input type="text" ng-model="searchName" placeholder="name">
-          <input type="text" ng-model="searchUrl" placeholder="url">
-          <input type="submit" value="Søg">
-        </form>
+        <div class="row" ng-if="!events" ng-show="showSpinner">
+          <div class="col">
+            <div class="spinner-border text-primary" role="status">
+              <span class="sr-only">Henter resultater</span>
+            </div>
+          </div>
+        </div>
 
-        <table class="table" ng-if="events && !displayEvent">
-          <thead>
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Titel</th>
-            <th scope="col">Occurrences</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr ng-repeat="event in events" ng-click="clickEvent(event)">
-            <td>{{event['@id']}}</td>
-            <td>{{event.name}}</td>
-            <td>{{event.occurrences.length }}</td>
-          </tr>
-          </tbody>
-        </table>
+        <div class="row" ng-if="events && !displayEvent">
+          <div class="col-12">
+            <p class="text-left">Resultater:</p>
+            <table class="table table-hover text-left" >
+              <thead>
+              <tr>
+                <th scope="col">Billede</th>
+                <th scope="col">Begivenhed</th>
+                <th scope="col">Dato</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr ng-repeat="event in events" ng-click="clickEvent(event)"
+              style="cursor: pointer;">
+                <td><img src="{{event.images.small}}" alt="{{event.name}}"
+                style="max-width: 80px;"></td>
+                <td><strong>{{event.name}}</strong><br>{{event.organizer.name}}</td>
+                <td>{{event.occurrences[0].startDate | date}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-        <div ng-if="displayEvent">
-          <h3>{{ displayEvent.name }}</h3>
 
-          <table class="table">
-            <thead>
-            <tr>
-              <th scope="col">ID</th>
-              <th scope="col">Occurrence</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="occurrence in displayEvent.occurrences" ng-click="clickOccurrence(occurrence)">
-              <td>{{occurrence['@id']}}</td>
-              <td>{{occurrence.name}}</td>
-              <td>{{occurrence.occurrences.length }}</td>
-            </tr>
-            </tbody>
-          </table>
+        <div class="row" ng-if="displayEvent">
+          <div class="col-12">
+            <p class="text-left">Valgt begivenhed: <strong>{{ displayEvent.name
+            }}</strong> {{ displayEvent.organizer.name }}</p>
+          </div>
+          <div class="col-12">
+            <p class="text-left">Vælg en forekomst</p>
+            <table class="table table-hover text-left">
+              <thead>
+                <tr>
+                  <th scope="col">Dato</th>
+                  <th scope="col">Tags</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="occurrence in displayEvent.occurrences"
+                ng-click="clickOccurrence(occurrence)" style="cursor: pointer;">
+                  <td>{{occurrence.startDate | date}}</td>
+                  <td><span ng-repeat="tag in occurrence.tags" class="badge badge-dark">{{tag}}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
