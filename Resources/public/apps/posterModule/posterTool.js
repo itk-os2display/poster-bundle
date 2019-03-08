@@ -11,15 +11,23 @@ angular.module('posterModule').directive('posterTool', [
                 tool: '='
             },
             link: function (scope) {
+                // Search by name as default.
+                scope.typeSelect = 'searchName';
                 scope.searchName = '';
                 scope.searchUrl = '';
 
                 scope.search = function () {
+                    var params = {};
+
+                    if (scope.typeSelect === 'searchName') {
+                        params.name = scope.searchName;
+                    }
+                    else if (scope.typeSelect === 'searchUrl') {
+                        params.url = scope.searchUrl;
+                    }
+
                     $http.get('/api/os2display_poster/events', {
-                        params: {
-                            name: scope.searchName,
-                            url: scope.searchUrl
-                        }
+                        params: params
                     }).then(
                         function success(response) {
                             $timeout(function () {
@@ -31,6 +39,20 @@ angular.module('posterModule').directive('posterTool', [
 
                 scope.clickEvent = function (event) {
                     scope.displayEvent = event;
+                };
+
+                scope.refreshEvent = function () {
+                    $http.get('/api/os2display_poster/occurrence', {
+                        params: {
+                            occurrenceId: scope.slide.options.data.occurrenceId
+                        }
+                    }).then(
+                        function success(response) {
+                            $timeout(function () {
+                                scope.slide.options.data = response.data;
+                            });
+                        }
+                    );
                 };
 
                 scope.clickOccurrence = function (occurrence) {

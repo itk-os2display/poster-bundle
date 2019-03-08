@@ -47,7 +47,7 @@ class EventdatabasenIntegration
         $query = $event->getQuery();
         $query['isPublished'] = true;
 
-        if ($query['url'] == '') {
+        if (isset($query['url']) && $query['url'] == '') {
             unset($query['url']);
         }
 
