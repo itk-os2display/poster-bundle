@@ -65,13 +65,19 @@ class PosterService
         $slides = $this->entityManager->getRepository(Slide::class)
             ->findBySlideType('poster-base');
 
-        // @TODO: Cache results from providers.
-        // @TODO: Maybe ignore slides that are not published.
+        $cache = [];
 
         foreach ($slides as $slide) {
             $options = $slide->getOptions();
 
             if (isset($options['data']['occurrenceId'])) {
+                $cacheKey = sha1($options['data']['occurrenceId']);
+
+                if (isset($cache[$cacheKey])) {
+                    $slide->setOptions($cache[$cacheKey]);
+                    continue;
+                }
+
                 $updatedOccurrence = $this->getOccurrence(
                     $options['data']['occurrenceId']
                 );
@@ -79,6 +85,8 @@ class PosterService
                 $options['data'] = $updatedOccurrence;
 
                 $slide->setOptions($options);
+
+                $cache[$cacheKey] = $updatedOccurrence;
             }
         }
 
