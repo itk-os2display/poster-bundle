@@ -1,0 +1,28 @@
+{
+  "name": "os2display-poster-bundle",
+  "description": "",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-header": "^1.8.9",
+    "gulp-help": "^1.6.1",
+    "gulp-if": "^2.0.2",
+    "gulp-jshint": "^2.1.0",
+    "gulp-ng-annotate": "^2.1.0",
+    "gulp-notify": "^3.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^3.1.0",
+    "gulp-uglify": "^3.0.0",
+    "gulp-util": "^3.0.8",
+    "js-yaml": "^3.10.0",
+    "jshint-stylish": "^2.2.1",
+    "yargs": "^10.1.1"
+  },
+  "devDependencies": {
+    "bootstrap": "^4.0.0-beta.3",
+    "gulp-watch": "^5.0.0",
+    "jshint": "^2.10.1"
+  }
+}

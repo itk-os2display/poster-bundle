@@ -1,8 +1,8 @@
 assets:
 #    css:
 #        - bundles/os2displayposter/assets/build/os2displayposter.min.css
-#    js_prod:
-#        - bundles/os2displayposter/assets/build/os2displayposter.min.js
+    js_prod:
+        - bundles/os2displayposter/assets/build/os2displayposter.min.js
 
 modules:
     posterModule:
