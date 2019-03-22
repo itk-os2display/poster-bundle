@@ -45,11 +45,13 @@ class EventdatabasenIntegration
         }
 
         $query = $event->getQuery();
-        $query['isPublished'] = true;
 
         if (isset($query['url']) && $query['url'] == '') {
             unset($query['url']);
         }
+
+        $query['occurrences.startDate'] = ['after' => date('Y-m-d')];
+        $query['items_per_page'] = 10;
 
         try {
             $client = new Client();
@@ -64,9 +66,17 @@ class EventdatabasenIntegration
 
             $results = json_decode($res->getBody()->getContents());
 
+            $results->number_of_pages = (int) ($results->{'hydra:totalItems'} / $query['items_per_page']);
+
             $events = $results->{'hydra:member'};
 
             $event->setEvents($events);
+            $event->setMeta([
+                'number_of_pages' => $results->number_of_pages,
+                'page' => isset($query['page']) ? (int) $query['page'] : 0,
+                'total_results' => $results->{'hydra:totalItems'},
+                'items_per_page' => $query['items_per_page'],
+            ]);
         } catch (GuzzleException $e) {
         }
     }

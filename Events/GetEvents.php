@@ -14,6 +14,7 @@ class GetEvents extends Event
 
     protected $query;
     protected $events;
+    protected $meta;
 
     /**
      * GetEvents constructor.
@@ -40,5 +41,13 @@ class GetEvents extends Event
 
     public function setQuery(array $query) {
         $this->query = $query;
+    }
+
+    public function getMeta() {
+        return $this->meta;
+    }
+
+    public function setMeta($meta) {
+        $this->meta = $meta;
     }
 }

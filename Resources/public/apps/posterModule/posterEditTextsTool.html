@@ -18,7 +18,7 @@
           <div class="col">
             <h2 class="text-left">Overskrift</h2>
             <div class="form-group">
-              <label class="text-left" for="slide.options.overrides.name">{{slide.options.data.name}}</label>
+              <label class="text-left">{{slide.options.data.name}}</label>
               <textarea class="form-control" rows="3" placeholder="Overskrift overskrivning" ng-model="slide.options.overrides.name"></textarea>
             </div>
           </div>
@@ -27,16 +27,16 @@
           <div class="col">
             <h2 class="text-left">Manchet</h2>
             <div class="form-group">
-              <label class="text-left" for="slide.options.overrides.excerpt">{{slide.options.data.excerpt}}</label>
+              <label class="text-left">{{slide.options.data.excerpt}}</label>
               <textarea class="form-control" rows="3" placeholder="Manchet overskrivning" ng-model="slide.options.overrides.excerpt"></textarea>
             </div>
           </div>
         </div>
-        <div class="row" ng-if="slide.options.data.ticketPriceRange">
+        <div class="row">
           <div class="col">
             <h2 class="text-left">Billetpris</h2>
             <div class="form-group">
-              <label class="text-left" for="slide.options.overrides.ticketPriceRange">{{slide.options.data.ticketPriceRange}}</label>
+              <label class="text-left">{{slide.options.data.ticketPriceRange}}</label>
               <textarea class="form-control" rows="3" placeholder="Billetpris overskrivning" ng-model="slide.options.overrides.ticketPriceRange"></textarea>
             </div>
           </div>
@@ -45,7 +45,7 @@
           <div class="col">
             <h2 class="text-left">Læs mere tekst</h2>
             <div class="form-group">
-              <label class="text-left" for="slide.options.overrides.readMoreText">{{slide.options.data.readMoreText}}</label>
+              <label class="text-left">{{slide.options.data.readMoreText}}</label>
               <textarea class="form-control" rows="3" placeholder="Læs mere overskrivning" ng-model="slide.options.overrides.readMoreText"></textarea>
               </div>
           </div>
@@ -55,7 +55,7 @@
             <h2 class="text-left">Skjul tidspunkt</h2>
             <div class="form-check text-left">
               <input class="form-check-input" type="checkbox" ng-model="slide.options.overrides.hideTime">
-              <label  class="form-check-label" for="slide.options.overrides.hideTime">
+              <label  class="form-check-label">
                 Skjul tidspunkt
               </label>
             </div>

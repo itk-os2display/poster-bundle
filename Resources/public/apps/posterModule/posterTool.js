@@ -16,8 +16,26 @@ angular.module('posterModule').directive('posterTool', [
                 scope.searchName = '';
                 scope.searchUrl = '';
 
-                scope.search = function () {
+                scope.calculatePager = function(meta) {
+                    scope.pager = {
+                      pages: [],
+                      currentPage: meta.page
+                    };
+
+                    for (var i = 1; i <= meta.number_of_pages; i++) {
+                        scope.pager.pages[i] = i;
+                    }
+                };
+
+                scope.search = function (page) {
+                    scope.displayEvent = null;
+                    scope.events = null;
+
                     var params = {};
+
+                    if (page) {
+                        params.page = page;
+                    }
 
                     if (scope.typeSelect === 'searchName') {
                         params.name = scope.searchName;
@@ -31,7 +49,10 @@ angular.module('posterModule').directive('posterTool', [
                     }).then(
                         function success(response) {
                             $timeout(function () {
-                                scope.events = response.data;
+                                scope.events = response.data.events;
+                                scope.meta = response.data.meta;
+
+                                scope.calculatePager(scope.meta);
                             });
                         }
                     );
@@ -39,6 +60,11 @@ angular.module('posterModule').directive('posterTool', [
 
                 scope.clickEvent = function (event) {
                     scope.displayEvent = event;
+
+                    // If only one occurrence, select that.
+                    if (scope.displayEvent.occurrences.length === 1) {
+                        scope.clickOccurrence(scope.displayEvent.occurrences[0]);
+                    }
                 };
 
                 scope.refreshEvent = function () {

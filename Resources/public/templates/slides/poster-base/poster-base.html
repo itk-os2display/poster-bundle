@@ -23,9 +23,12 @@
             <p class="tpl-info-area-time" ng-if="!ikSlide.options.overrides.hideTime">{{ikSlide.options.data.startDate | date:'HH:mm'}}</p>
         </span>
 
-        <p class="tpl-info-area-ticket" ng-if="!ikSlide.options.overrides.ticketPriceRange && (!ikSlide.options.data.ticketPriceRange || ikSlide.options.data.ticketPriceRange == 0)">Gratis</p>
-        <p class="tpl-info-area-ticket" ng-if="!ikSlide.options.overrides.ticketPriceRange && ikSlide.options.data.ticketPriceRange > 0">{{ikSlide.options.data.ticketPriceRange}}</p>
-        <p class="tpl-info-area-ticket" ng-if="ikSlide.options.overrides.ticketPriceRange">{{ikSlide.options.overrides.ticketPriceRange}}</p>
+        <p class="tpl-info-area-ticket">
+            {{ikSlide.options.overrides.ticketPriceRange ?
+              ikSlide.options.overrides.ticketPriceRange :
+             (ikSlide.options.data.ticketPriceRange == 0 ? 'Gratis' : ikSlide.options.data.ticketPriceRange)
+            }}
+        </p>
 
         <p class="tpl-info-area-moreinfo" ng-if="!ikSlide.options.overrides.readMoreText && (ikSlide.options.data.baseUrl || ikSlide.options.data.url)">Læs mere på <a href="#">{{ikSlide.options.data.baseUrl ? ikSlide.options.data.baseUrl : ikSlide.options.data.url }}</a></p>
         <p class="tpl-info-area-moreinfo" ng-if="ikSlide.options.overrides.readMoreText">{{ikSlide.options.overrides.readMoreText}}</p>

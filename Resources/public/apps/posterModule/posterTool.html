@@ -98,17 +98,23 @@
                          style="max-width: 80px;"></td>
                 <td><strong>{{event.name}}</strong><br>{{event.organizer.name}}
                 </td>
-                <td>{{event.occurrences[0].startDate | date}}</td>
+                <td>{{event.occurrences[0].startDate | date}}<span ng-if="event.occurrences.length > 1">, ...</span></td>
               </tr>
               </tbody>
             </table>
+            <nav aria-label="Pagination">
+              <ul class="pagination pagination-sm">
+                <li class="page-item" ng-repeat="page in pager.pages"><a class="page-link" ng-click="search(page)" ng-style="{'is-active': pager.currentPage === page}"> {{page}} </a></li>
+              </ul>
+            </nav>
           </div>
         </div>
 
         <div class="row" ng-if="displayEvent">
           <div class="col-12">
-            <p class="text-left">Valgt begivenhed: <strong>{{ displayEvent.name
-              }}</strong> {{ displayEvent.organizer.name }}</p>
+            <p class="text-left">
+              Valgt begivenhed: <strong>{{ displayEvent.name }}</strong> {{ displayEvent.organizer.name }}
+            </p>
           </div>
           <div class="col-12">
             <p class="text-left">Vælg en forekomst</p>
@@ -116,7 +122,7 @@
               <thead>
               <tr>
                 <th scope="col">Dato</th>
-                <th scope="col">Tags</th>
+                <th scope="col">Pris</th>
               </tr>
               </thead>
               <tbody>
@@ -124,8 +130,7 @@
                   ng-click="clickOccurrence(occurrence)"
                   style="cursor: pointer;">
                 <td>{{occurrence.startDate | date}}</td>
-                <td><span ng-repeat="tag in occurrence.tags"
-                          class="badge badge-dark">{{tag}}</span></td>
+                <td>{{occurrence.ticketPriceRange}}</td>
               </tr>
               </tbody>
             </table>

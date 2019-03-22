@@ -107,7 +107,10 @@ class PosterService
             $event
         );
 
-        return $event->getEvents();
+        return [
+            'events' => $event->getEvents(),
+            'meta' => $event->getMeta(),
+        ];
     }
 
     /**
