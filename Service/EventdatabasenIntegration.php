@@ -73,7 +73,7 @@ class EventdatabasenIntegration
             $event->setEvents($events);
             $event->setMeta([
                 'number_of_pages' => $results->number_of_pages,
-                'page' => isset($query['page']) ? (int) $query['page'] : 0,
+                'page' => isset($query['page']) ? (int) $query['page'] : 1,
                 'total_results' => $results->{'hydra:totalItems'},
                 'items_per_page' => $query['items_per_page'],
             ]);
