@@ -11,6 +11,7 @@
     --font-size-h1: 3em;
     --font-size-lead: 1.5em;
     --font-size-p: var(--font-size-lead);
+    --line-height: calc(var(--font-size-p) * 1.43);
 }
 
 /* Template styling */
@@ -20,8 +21,8 @@
     width: 100vw;
     background-color: var(--color-white);
     display: grid;
-    grid-template-columns: 75% 25%;
-    grid-template-rows: 40% 50% 10%;
+    grid-template-columns: 66.666% 33.334%;
+    grid-template-rows: 50% 40% 10%;
     grid-template-areas:
     "a b"
     "a c"
@@ -32,6 +33,7 @@
     overflow-wrap: break-word;
     word-break: break-word;
     word-wrap: break-word;
+    line-height: var(--line-height);
 }
 
 /* Image area */
@@ -78,8 +80,19 @@
     padding: var(--box-padding);
     background-color: var(--color-white);
 }
+
+.poster-base .tpl-info-area-ticket,
+.poster-base .tpl-info-area-date,
+.poster-base .tpl-info-area-time,
+.poster-base .tpl-info-area-place {
+  margin-block-start: 0;
+  margin-block-end: calc(var(--spacer) / 2);
+}
+.poster-base .tpl-info-area-moreinfo {
+  margin-block-start: calc(var(--spacer) * 5);;
+}
+
 .poster-base .tpl-info-area p {
-    margin-block-start: 0;
     color: var(--color-black);
     line-height: 1.5;
 }
