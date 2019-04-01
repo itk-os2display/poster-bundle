@@ -116,6 +116,11 @@ angular.module('posterModule').directive('posterTool', [
                         function success(response) {
                             $timeout(function () {
                                 scope.slide.options.data = response.data;
+
+                                if (scope.slide.options.data.endDate) {
+                                  var endTimestamp = new Date(scope.slide.options.data.endDate).getTime();
+                                  scope.slide.schedule_to = parseInt(endTimestamp / 1000);
+                                }
                             });
                         }
                     );
