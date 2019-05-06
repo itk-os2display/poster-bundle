@@ -82,11 +82,12 @@ class PosterService
                     $options['data']['occurrenceId']
                 );
 
-                $options['data'] = $updatedOccurrence;
+                if (!is_null($updatedOccurrence)) {
+                    $options['data'] = $updatedOccurrence;
+                    $slide->setOptions($options);
 
-                $slide->setOptions($options);
-
-                $cache[$cacheKey] = $updatedOccurrence;
+                    $cache[$cacheKey] = $updatedOccurrence;
+                }
             }
         }
 
