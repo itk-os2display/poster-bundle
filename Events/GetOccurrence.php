@@ -14,6 +14,7 @@ class GetOccurrence extends Event
 
     protected $id;
     protected $occurrence;
+    protected $notFound;
 
     /**
      * GetEvent constructor.
@@ -34,5 +35,13 @@ class GetOccurrence extends Event
 
     public function getId() {
         return $this->id;
+    }
+
+    public function getNotFound() {
+        return $this->notFound;
+    }
+
+    public function setNotFound($notFound) {
+        $this->notFound = $notFound;
     }
 }

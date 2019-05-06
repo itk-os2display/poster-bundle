@@ -70,7 +70,8 @@ class PosterService
         foreach ($slides as $slide) {
             $options = $slide->getOptions();
 
-            if (isset($options['data']['occurrenceId'])) {
+            if ((!isset($options['do_not_update']) || $options['do_not_update'] == false) &&
+                isset($options['data']['occurrenceId'])) {
                 $cacheKey = sha1($options['data']['occurrenceId']);
 
                 if (isset($cache[$cacheKey])) {
@@ -81,6 +82,12 @@ class PosterService
                 $updatedOccurrence = $this->getOccurrence(
                     $options['data']['occurrenceId']
                 );
+
+                if ($updatedOccurrence == false) {
+                    $options['do_not_update'] = true;
+                    $slide->setOptions($options);
+                    continue;
+                }
 
                 if (!is_null($updatedOccurrence)) {
                     $options['data'] = $updatedOccurrence;
@@ -144,6 +151,10 @@ class PosterService
             $event::EVENT,
             $event
         );
+
+        if ($event->getNotFound()) {
+            return false;
+        }
 
         return $event->getOccurrence();
     }

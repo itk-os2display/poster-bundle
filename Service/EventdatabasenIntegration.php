@@ -169,6 +169,9 @@ class EventdatabasenIntegration
 
             $event->setOccurrence($eventOccurrence);
         } catch (GuzzleException $e) {
+            if ($e->getCode() == 404) {
+                $event->setNotFound(true);
+            }
         }
     }
 }
