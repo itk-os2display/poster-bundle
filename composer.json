@@ -1,0 +1,14 @@
+{
+    "name": "itk-os2display/poster-bundle",
+    "description": "Os2Display posters",
+    "type": "symfony-bundle",
+    "require": {
+        "doctrine/cache": "^1.0",
+        "guzzlehttp/guzzle": "^6.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Os2Display\\PosterBundle\\": ""
+        }
+    }
+}

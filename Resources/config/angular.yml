@@ -1,0 +1,18 @@
+assets:
+#    css:
+#        - bundles/os2displayposter/assets/build/os2displayposter.min.css
+    js_prod:
+        - bundles/os2displayposter/assets/build/os2displayposter.min.js
+
+modules:
+    posterModule:
+        files:
+            - bundles/os2displayposter/apps/posterModule/module.js
+            - bundles/os2displayposter/apps/posterModule/posterTool.js
+            - bundles/os2displayposter/apps/posterModule/posterEditTextsTool.js
+
+apps:
+    # Inject into administration app to enable access to tool from admin.
+    ikApp:
+        dependencies:
+            - posterModule

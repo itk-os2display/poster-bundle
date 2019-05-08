@@ -1,0 +1,41 @@
+{
+  "id": "poster-base",
+  "type": "slide",
+  "name": "Plakat",
+  "icon": "poster-base.png",
+  "paths": {
+    "live": "poster-base.html",
+    "edit": "poster-base.html",
+    "preview": "poster-base.html",
+    "css": "poster-base.css",
+    "js": "bundles/os2displaydefaulttemplate/templates/js/baseSlide.js"
+  },
+  "orientation": "landscape",
+  "slide_type": "poster-base",
+  "media_type": "image",
+  "script_id": "base",
+  "ideal_dimensions": {
+    "width": "1920",
+    "height": "1080"
+  },
+  "empty_options": {
+    "fontsize": 16,
+    "data": {},
+    "overrides": {}
+  },
+  "tools": [
+    {
+      "name": "Vælg begivenhed",
+      "id": "poster-tool"
+    },
+    {
+      "name": "Overskrivninger",
+      "id": "poster-edit-texts-tool"
+    },
+    {
+      "name": "Logo",
+      "id": "logo-editor",
+      "template": "bundles/os2displaydefaulttemplate/apps/toolsModule/fixed-logo-editor.html"
+    }
+  ]
+}

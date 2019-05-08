@@ -1,0 +1,115 @@
+
+/* Template variables */
+:root {
+    --spacer: 1%;
+    --box-padding: calc(var(--spacer) * 10);
+    --color-primary: #4991b8;
+    --color-secondary: #505050;
+    --color-white: #fff;
+    --color-black: #000;
+    --font-family: Arial, sans-serif;
+    --font-size-h1: 3em;
+    --font-size-lead: 1.5em;
+    --font-size-p: var(--font-size-lead);
+    --line-height: calc(var(--font-size-p) * 1.43);
+}
+
+/* Template styling */
+.poster-base {
+    font-family: var(--font-family);
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--color-white);
+    display: grid;
+    grid-template-columns: 66.666% 33.334%;
+    grid-template-rows: 50% 40% 10%;
+    grid-template-areas:
+    "a b"
+    "a c"
+    "a d";
+    grid-gap: 0;
+    text-align: left; /* Nessesary to overwrite admin styles */
+    hyphens: auto;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    word-wrap: break-word;
+    line-height: var(--line-height);
+}
+
+/* Image area */
+.poster-base .tpl-image-area {
+    grid-area: a;
+    background-size: cover;
+    background-position: center center;
+}
+
+/* Header area */
+.poster-base .tpl-header-area {
+    grid-area: b;
+    display: grid;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: var(--box-padding);
+}
+
+.poster-base .tpl-header-area h1 {
+    font-family: var(--font-family);
+    font-size: var(--font-size-h1);
+    margin-block-start: 0;
+    margin-block-end: calc(var(--spacer) * 2);
+    line-height: 1.2;
+}
+
+.poster-base .tpl-header-area .lead {
+    font-family: var(--font-family);
+    font-size: var(--font-size-lead);
+    margin-block-start: 0;
+    margin-block-end: 0;
+    line-height: 1.2;
+}
+
+.poster-base .tpl-header-area-center {
+    align-self: center;
+}
+
+/* Info area */
+.poster-base .tpl-info-area {
+    font-family: var(--font-family);
+    grid-area: c;
+    font-size: var(--font-size-p);
+    padding: var(--box-padding);
+    background-color: var(--color-white);
+}
+
+.poster-base .tpl-info-area-ticket,
+.poster-base .tpl-info-area-date,
+.poster-base .tpl-info-area-time,
+.poster-base .tpl-info-area-place {
+  margin-block-start: 0;
+  margin-block-end: calc(var(--spacer) / 2);
+}
+.poster-base .tpl-info-area-moreinfo {
+  margin-block-start: calc(var(--spacer) * 5);;
+}
+
+.poster-base .tpl-info-area p {
+    color: var(--color-black);
+    line-height: 1.5;
+}
+.poster-base .tpl-info-area p a {
+    color: var(--color-primary);
+    font-family: var(--font-family);
+}
+.poster-base .tpl-logo-area {
+    grid-area: d;
+    text-align: right;
+    background-color: var(--color-white);
+    padding: var(--box-padding);
+    padding-top: 0;
+    display: grid;
+}
+
+.poster-base .tpl-logo-img {
+    max-height: 150%;
+    margin: 0 0 0 auto;
+}

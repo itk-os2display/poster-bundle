@@ -1,0 +1,18 @@
+services:
+    os2display.poster.service:
+        class: Os2Display\PosterBundle\Service\PosterService
+        arguments: [900, [], '@event_dispatcher', '@doctrine.orm.entity_manager', '@os2display.poster.cache']
+        tags:
+            - { name: kernel.event_listener, event: ik.cron, method: onCron }
+
+    os2display.poster.eventdatabasen:
+        class: Os2Display\PosterBundle\Service\EventdatabasenIntegration
+        arguments: [false, '']
+        tags:
+            - { name: kernel.event_listener, event: os2display.poster.get_event, method: getEvent }
+            - { name: kernel.event_listener, event: os2display.poster.get_events, method: getEvents }
+            - { name: kernel.event_listener, event: os2display.poster.get_occurrence, method: getOccurrence }
+
+    os2display.poster.cache:
+        class: Doctrine\Common\Cache\FilesystemCache
+        arguments: [%kernel.cache_dir%]
