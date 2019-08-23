@@ -93,7 +93,7 @@ class EventdatabasenIntegration
             $client = new Client();
             $res = $client->request(
                 'GET',
-                $this->url . '/api/events/'.$id,
+                $this->url . $id,
                 [
                     'timeout' => 2,
                 ]
@@ -101,9 +101,6 @@ class EventdatabasenIntegration
 
             $results = json_decode($res->getBody()->getContents());
 
-            foreach ($results->occurences as &$occurrence) {
-                $occurrence->id = $occurrence->{'@id'};
-            }
 
             $result = [
                 'id' => $results->{'@id'},
