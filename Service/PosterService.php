@@ -87,23 +87,25 @@ class PosterService
                 );
 
                 // If the occurrence does not exist:
-                if ($updatedOccurrence == false) {
+                if ($updatedOccurrence == false && $updatedEvent !== null) {
                     // See if other occurrences exist
                     // for the event, and pick the closest.
                     $oldStartDate = strtotime($options['data']['startDate']);
 
-                    // Find closest occurrence to current, and replace with this.
-                    foreach($updatedEvent['occurrences'] as $occurrence)
-                    {
-                        $interval[] = abs($oldStartDate - strtotime($occurrence->startDate));
+                    if (count($updatedEvent['occurrences']) > 0) {
+                        // Find closest occurrence to current, and replace with this.
+                        foreach($updatedEvent['occurrences'] as $occurrence)
+                        {
+                            $interval[] = abs($oldStartDate - strtotime($occurrence->startDate));
+                        }
+                        asort($interval);
+                        $closestKey = key($interval);
+                        $closestOccurrence = $updatedEvent['occurrences'][$closestKey];
+
+                        if ($closestOccurrence) {
+                            $updatedOccurrence = $this->getOccurrence($closestOccurrence->{'@id'});
+                        }
                     }
-
-                    asort($interval);
-                    $closestKey = key($interval);
-
-                    $closestOccurrence =  $updatedEvent['occurrences'][$closestKey];
-
-                    $updatedOccurrence = $this->getOccurrence($closestOccurrence->{'@id'});
                 }
 
                 if (isset($updatedOccurrence)) {
