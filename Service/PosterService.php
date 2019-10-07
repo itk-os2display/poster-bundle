@@ -67,6 +67,7 @@ class PosterService
 
         $cache = [];
 
+        /* @var $slide Slide */
         foreach ($slides as $slide) {
             $options = $slide->getOptions();
 
@@ -79,22 +80,46 @@ class PosterService
                     continue;
                 }
 
+                $updatedEvent = $this->getEvent($options['data']['eventId']);
+
                 $updatedOccurrence = $this->getOccurrence(
                     $options['data']['occurrenceId']
                 );
 
-                if ($updatedOccurrence == false) {
-                    $options['do_not_update'] = true;
-                    $slide->setOptions($options);
-                    continue;
+                // If the occurrence does not exist:
+                if ($updatedOccurrence == false && $updatedEvent !== null) {
+                    // See if other occurrences exist
+                    // for the event, and pick the closest.
+                    $oldStartDate = strtotime($options['data']['startDate']);
+
+                    if (count($updatedEvent['occurrences']) > 0) {
+                        // Find closest occurrence to current, and replace with this.
+                        foreach($updatedEvent['occurrences'] as $occurrence)
+                        {
+                            $interval[] = abs($oldStartDate - strtotime($occurrence->startDate));
+                        }
+                        asort($interval);
+                        $closestKey = key($interval);
+                        $closestOccurrence = $updatedEvent['occurrences'][$closestKey];
+
+                        if ($closestOccurrence) {
+                            $updatedOccurrence = $this->getOccurrence($closestOccurrence->{'@id'});
+                        }
+                    }
                 }
 
-                if (!is_null($updatedOccurrence)) {
+                if (isset($updatedOccurrence)) {
                     $options['data'] = $updatedOccurrence;
-                    $slide->setOptions($options);
-
                     $cache[$cacheKey] = $updatedOccurrence;
                 }
+                else {
+                    // If the occurrence does not exist, unpublish the slide,
+                    // and stop updating the data.
+                    $options['do_not_update'] = true;
+                    $slide->setPublished(false);
+                }
+
+                $slide->setOptions($options);
             }
         }
 
