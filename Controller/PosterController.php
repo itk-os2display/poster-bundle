@@ -6,20 +6,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Class PosterController.
+ */
 class PosterController extends Controller
 {
     /**
-     * Test function.
-     *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    public function testAction()
-    {
-        return new JsonResponse();
-    }
-
-    /**
-     * @TODO
+     * Get events.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return \Symfony\Component\HttpFoundation\JsonResponse
@@ -31,7 +24,7 @@ class PosterController extends Controller
     }
 
     /**
-     * @TODO
+     * Get an event by id.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return \Symfony\Component\HttpFoundation\JsonResponse
@@ -42,7 +35,7 @@ class PosterController extends Controller
     }
 
     /**
-     * @TODO
+     * Get an occurrence by id.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return \Symfony\Component\HttpFoundation\JsonResponse
