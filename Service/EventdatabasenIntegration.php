@@ -8,6 +8,9 @@ use Os2Display\PosterBundle\Events\GetEvents;
 use Os2Display\PosterBundle\Events\GetEvent;
 use Os2Display\PosterBundle\Events\GetOccurrence;
 
+/**
+ * Class EventdatabasenIntegration.
+ */
 class EventdatabasenIntegration
 {
     const NAME = 'Eventdatabasen';
@@ -38,6 +41,11 @@ class EventdatabasenIntegration
         ];
     }
 
+    /**
+     * Get events.
+     *
+     * @param \Os2Display\PosterBundle\Events\GetEvents $event
+     */
     public function getEvents(GetEvents $event)
     {
         if (!$this->enabled) {
@@ -81,6 +89,11 @@ class EventdatabasenIntegration
         }
     }
 
+    /**
+     * Get event.
+     *
+     * @param \Os2Display\PosterBundle\Events\GetEvent $event
+     */
     public function getEvent(GetEvent $event)
     {
         if (!$this->enabled) {
@@ -115,6 +128,11 @@ class EventdatabasenIntegration
         }
     }
 
+    /**
+     * Get Occurrence.
+     *
+     * @param \Os2Display\PosterBundle\Events\GetOccurrence $event
+     */
     public function getOccurrence(GetOccurrence $event) {
         if (!$this->enabled) {
             return;

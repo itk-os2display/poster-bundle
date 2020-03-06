@@ -1,6 +1,3 @@
-/**
- * Poster tool. Select between subscription or single.
- */
 angular.module('posterModule').directive('posterTool', [
     '$timeout', '$http', function ($timeout, $http) {
         'use strict';
@@ -14,26 +11,6 @@ angular.module('posterModule').directive('posterTool', [
                 tool: '='
             },
             link: function (scope) {
-                /**
-                 * Select type of slide.
-                 *
-                 * @param type
-                 *   'single' or 'subscription'
-                 */
-                scope.selectType = function (type) {
-                    scope.slide.options.type = type;
-                };
-
-
-
-
-
-
-
-
-
-
-
                 // Search by name as default.
                 scope.typeSelect = 'searchName';
                 scope.searchName = '';
