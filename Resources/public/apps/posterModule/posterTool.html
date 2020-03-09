@@ -9,22 +9,30 @@
     </div>
     <div class="bootstrap container edit-menu--background-page">
       <div class="edit-menu--background-page-inner" style="padding-top: 1em;">
-        <div class="row" ng-if="!ikSlide.options.type">
+        <div class="row" ng-if="!slide.options.type">
           <div class="col">
             <h1 class="mt-2 text-left">Vælg type</h1>
 
-            <button ng-click="selectType('single')">Enkelt</button>
-            <button ng-click="selectType('subscription')">Abonnér</button>
+            <div>
+              <button ng-click="selectType('single')">Enkelt</button>
+              <button ng-click="selectType('subscription')">Abonnér</button>
+            </div>
+
+            <div class="bg-info">
+              Dette valg kan ikke gøres om efter slidet er oprettet.<br>
+              "Enkelt" opretter en enkelt plakat ud fra ét arrangement.<br>
+              "Abonnér" opretter et slide der viser de X nyeste arrangementer ud fra valgt lokation, tags eller sted.
+            </div>
           </div>
         </div>
-        <div class="row" ng-if="ikSlide.options.type === 'single'">
-          <div class="col">
-            Single
+        <div class="row" ng-if="slide.options.type === 'single'">
+          <div class="col" >
+            <div ng-include="'/bundles/os2displayposter/apps/posterModule/single.html'"></div>
           </div>
         </div>
-        <div class="row" ng-if="ikSlide.options.type === 'subscription'">
+        <div class="row" ng-if="slide.options.type === 'subscription'">
           <div class="col">
-            Subscribe
+            <div ng-include="'/bundles/os2displayposter/apps/posterModule/subscription.html'"></div>
           </div>
         </div>
       </div>

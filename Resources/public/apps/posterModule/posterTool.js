@@ -24,15 +24,15 @@ angular.module('posterModule').directive('posterTool', [
                     scope.slide.options.type = type;
                 };
 
+                ////////////////////
+                /// Subscription ///
+                ////////////////////
 
 
 
-
-
-
-
-
-
+                ////////////////////
+                /// Single       ///
+                ////////////////////
 
                 // Search by name as default.
                 scope.typeSelect = 'searchName';

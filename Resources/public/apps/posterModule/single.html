@@ -1,0 +1,141 @@
+<div>
+  <h1>Enkelt plakat</h1>
+  <div class="row">
+    <div class="col">
+      <h1 class="mt-2 text-left">Søg efter arrangement</h1>
+    </div>
+  </div>
+  <div ng-if="slide.options.data" class="row border rounded-sm text-left
+        mb-3 pt-3 pb-3">
+    <div class="col-2">
+      <img ng-src="{{slide.options.data.image}}"
+           alt="{{slide.options.data.name}}" class="img-fluid">
+    </div>
+    <div class="col-10">
+      <button class="btn btn-success btn-sm btn-inline float-right"
+              ng-click="refreshEvent()"
+              name="refreshContent">Opdater indhold
+      </button>
+      <p>Valgt begivenhed:</p>
+      <p>
+        <strong><span>{{slide.options.data.name}}</span> -
+          <span>{{slide.options.data.startDate | date}}</span></strong>
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <form id="searchForm" ng-submit="search()">
+        <div class="form-row">
+          <div class="col-2">
+            <div class="form-group">
+              <label class="sr-only" for="type-select">Vælg type</label>
+              <select class="form-control" id="type-select"
+                      ng-model="typeSelect">
+                <option selected value="searchName">Navn</option>
+                <option value="searchUrl">URL</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-8">
+            <div class="form-group" ng-show="typeSelect === 'searchName'">
+              <label for="form-name"
+                     class="sr-only">Søg efter begivenhed</label>
+              <input class="form-control" id="form-name" type="text"
+                     ng-model="searchName" placeholder="Begivenhedsnavn">
+            </div>
+            <div class="form-group" ng-show="typeSelect === 'searchUrl'">
+              <label for="form-url"
+                     class="sr-only">Link til begivenhed</label>
+              <input class="form-control" id="form-url" type="text"
+                     ng-model="searchUrl" placeholder="Begivenhedens URL">
+            </div>
+          </div>
+          <div class="col-2">
+            <input class="btn btn-primary btn-block" type="submit"
+                   value="Søg" ng-click="showSpinner = true">
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row" ng-if="!events && showSpinner">
+    <div class="col">
+      <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Henter resultater</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" ng-if="events && !displayEvent">
+    <div class="col-12">
+      <p class="text-left">Resultater:</p>
+      <table class="table table-hover text-left">
+        <thead>
+        <tr>
+          <th scope="col">Billede</th>
+          <th scope="col">Begivenhed</th>
+          <th scope="col">Dato</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="event in events" ng-click="clickEvent(event)"
+            style="cursor: pointer;">
+          <td><img ng-src="{{event.images.small}}" alt="{{event.name}}"
+                   style="max-width: 80px;"></td>
+          <td><strong>{{event.name}}</strong><br>{{event.organizer.name}}
+          </td>
+          <td>{{event.occurrences[0].startDate | date}}<span ng-if="event.occurrences.length > 1">, ...</span></td>
+        </tr>
+        </tbody>
+      </table>
+      <nav aria-label="Pagination" style="display: flex; justify-content: center;" ng-if="pager.pagerMax > 1">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" ng-click="pagerBack()" aria-label="Tilbage" style="cursor: pointer">
+              <span aria-hidden="true">&laquo;</span>
+              <span class="sr-only">Previous</span>
+            </a>
+          </li>
+          <li class="page-item" ng-repeat="page in getPagerPages()" ng-class="{'active': pager.currentPage === page}" style="cursor: pointer">
+            <a class="page-link" ng-click="search(page)"> {{page}} </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" ng-click="pagerForward()" aria-label="Frem" style="cursor: pointer">
+              <span aria-hidden="true">&raquo;</span>
+              <span class="sr-only">Next</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <div class="row" ng-if="displayEvent">
+    <div class="col-12">
+      <p class="text-left">
+        Valgt begivenhed: <strong>{{ displayEvent.name }}</strong> {{ displayEvent.organizer.name }}
+      </p>
+    </div>
+    <div class="col-12">
+      <p class="text-left">Vælg en forekomst</p>
+      <table class="table table-hover text-left">
+        <thead>
+        <tr>
+          <th scope="col">Dato</th>
+          <th scope="col">Pris</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="occurrence in displayEvent.occurrences"
+            ng-click="clickOccurrence(occurrence)"
+            style="cursor: pointer;">
+          <td>{{occurrence.startDate | date}}</td>
+          <td>{{occurrence.ticketPriceRange}}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
