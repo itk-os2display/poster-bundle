@@ -1,12 +1,26 @@
 <div>
   <h1>Abonnementsplakat</h1>
 
-  <form data-ng-submit="submitSearch(searchText)">
-    <input class="form-control" ng-model="searchText" type="text">
-  </form>
+  <div class="spinner" ng-if="loading"></div>
 
-  <div ng-repeat="option in selectOptions">
-    <label><strong>{{option.text}}</strong></label>
-    <div ng-repeat="subOption in option.subOptions" ng-click="selectSubOption(subOption)">{{subOption.text}}</div>
-  </div>
+  <h2>Place</h2>
+  <select id="os2display-poster--select-subscription-place" name="states[]" multiple="" style="width: 100%" ng-show="!loading">
+    <option ng-repeat="subOption in selectOptions[0].subOptions" value="{{subOption.val}}">
+      {{subOption.text}}
+    </option>
+  </select>
+
+  <h2>Organizer</h2>
+  <select id="os2display-poster--select-subscription-organizers" name="states[]" multiple="" style="width: 100%" ng-show="!loading">
+    <option ng-repeat="subOption in selectOptions[1].subOptions" value="{{subOption.val}}">
+      {{subOption.text}}
+    </option>
+  </select>
+
+  <h2>Tag</h2>
+  <select id="os2display-poster--select-subscription-tags" name="states[]" multiple="" style="width: 100%" ng-show="!loading">
+    <option ng-repeat="subOption in selectOptions[2].subOptions" value="{{subOption.val}}">
+      {{subOption.text}}
+    </option>
+  </select>
 </div>

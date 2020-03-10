@@ -2,15 +2,15 @@
 # https://select2.org/
 
 assets:
-#    css:
-#        - bundles/os2displayposter/assets/select2.min.css
+    css:
+        - bundles/os2displayposter/assets/select2.min.css
     js_prod:
         - bundles/os2displayposter/assets/build/os2displayposter.min.js
 
 modules:
     posterModule:
         files:
-#            - bundles/os2displayposter/assets/select2.min.js
+            - bundles/os2displayposter/assets/select2.min.js
             - bundles/os2displayposter/apps/posterModule/module.js
             - bundles/os2displayposter/apps/posterModule/posterTool.js
             - bundles/os2displayposter/apps/posterModule/posterEditTextsTool.js

@@ -2,6 +2,7 @@
 
 namespace Os2Display\PosterBundle\Service;
 
+use GuzzleHttp\Client;
 use Os2Display\CoreBundle\Events\CronEvent;
 use Os2Display\PosterBundle\Events\GetEvents;
 use Os2Display\PosterBundle\Events\GetEvent;
@@ -94,8 +95,7 @@ class PosterService
 
                     if (count($updatedEvent['occurrences']) > 0) {
                         // Find closest occurrence to current, and replace with this.
-                        foreach($updatedEvent['occurrences'] as $occurrence)
-                        {
+                        foreach ($updatedEvent['occurrences'] as $occurrence) {
                             $interval[] = abs($oldStartDate - strtotime($occurrence->startDate));
                         }
                         asort($interval);
@@ -111,8 +111,7 @@ class PosterService
                 if (isset($updatedOccurrence)) {
                     $options['data'] = $updatedOccurrence;
                     $cache[$cacheKey] = $updatedOccurrence;
-                }
-                else {
+                } else {
                     // If the occurrence does not exist, unpublish the slide,
                     // and stop updating the data.
                     $options['do_not_update'] = true;
@@ -130,6 +129,7 @@ class PosterService
      * Get events from providers.
      *
      * @param $query
+     *
      * @return mixed
      */
     public function getEvents($query)
@@ -150,6 +150,7 @@ class PosterService
      * Get event from providers.
      *
      * @param $id
+     *
      * @return mixed
      */
     public function getEvent($id)
@@ -167,6 +168,7 @@ class PosterService
      * Get occurrence from providers.
      *
      * @param $occurrenceId
+     *
      * @return mixed
      */
     public function getOccurrence($occurrenceId)
@@ -182,5 +184,111 @@ class PosterService
         }
 
         return $event->getOccurrence();
+    }
+
+    /**
+     * Get searchable places.
+     *
+     * @return array|false|mixed
+     */
+    public function getPlaces()
+    {
+        $cacheKey = 'poster.places';
+        if ($this->cache->contains($cacheKey)) {
+            return $this->cache->fetch($cacheKey);
+        }
+
+        $res = $this->getContent('places');
+        $this->cache->save($cacheKey, $res, 60 * 60 * 24);
+
+        return $res;
+    }
+
+    /**
+     * Get searchable tags.
+     *
+     * @return array|false|mixed
+     */
+    public function getTags()
+    {
+        $cacheKey = 'poster.tags';
+        if ($this->cache->contains($cacheKey)) {
+            return $this->cache->fetch($cacheKey);
+        }
+
+        $res = $this->getContent('tags');
+        $this->cache->save($cacheKey, $res, 60 * 60 * 24);
+
+        return $res;
+    }
+
+    /**
+     * Get searchable organizers.
+     *
+     * @return array|false|mixed
+     */
+    public function getOrganizers()
+    {
+        $cacheKey = 'poster.organizers';
+        if ($this->cache->contains($cacheKey)) {
+            return $this->cache->fetch($cacheKey);
+        }
+
+        $res = $this->getContent('organizers');
+        $this->cache->save($cacheKey, $res, 60 * 60 * 24);
+
+        return $res;
+    }
+
+    /**
+     * Get content from Eventdatabase.
+     *
+     * @TODO: Change this to the event structure.
+     *
+     * @param string $type
+     * @param null $search
+     *
+     * @return array
+     */
+    private function getContent(string $type, $search = null)
+    {
+        $client = new Client();
+
+        $result = [];
+
+        $params = ['timeout' => 2];
+
+        if ($search !== null) {
+            $params['query'] = [
+                'name' => $search,
+            ];
+        }
+
+        $res = $client->request(
+            'GET',
+            'https://api.detskeriaarhus.dk/api/'.$type,
+            $params
+        );
+
+        $res = json_decode($res->getBody()->getContents());
+
+        $result = array_merge($result, $res->{'hydra:member'} ?? []);
+
+        $con = $res->{'hydra:view'}->{'hydra:next'} ?? false;
+        while ($con) {
+            $res = $client->request(
+                'GET',
+                'https://api.detskeriaarhus.dk'.$res->{'hydra:view'}->{'hydra:next'},
+                ['timeout' => 2]
+            );
+
+            $res = json_decode($res->getBody()->getContents());
+
+            $result = array_merge($result, $res->{'hydra:member'});
+
+            $con = $res->{'hydra:view'}->{'hydra:next'} ?? false;
+        }
+
+        return $result;
     }
 }
