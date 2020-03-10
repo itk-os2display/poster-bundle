@@ -1,1 +1,12 @@
-<h1>Abonnementsplakat</h1>
+<div>
+  <h1>Abonnementsplakat</h1>
+
+  <form data-ng-submit="submitSearch(searchText)">
+    <input class="form-control" ng-model="searchText" type="text">
+  </form>
+
+  <div ng-repeat="option in selectOptions">
+    <label><strong>{{option.text}}</strong></label>
+    <div ng-repeat="subOption in option.subOptions" ng-click="selectSubOption(subOption)">{{subOption.text}}</div>
+  </div>
+</div>

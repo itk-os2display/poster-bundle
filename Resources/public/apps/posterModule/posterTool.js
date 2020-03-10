@@ -13,7 +13,12 @@ angular.module('posterModule').directive('posterTool', [
                 close: '&',
                 tool: '='
             },
-            link: function (scope) {
+            link: function (scope, el) {
+                scope.selectedOption = null;
+                scope.selectOptions = [];
+
+                scope.searchText = '';
+
                 /**
                  * Select type of slide.
                  *
@@ -22,13 +27,81 @@ angular.module('posterModule').directive('posterTool', [
                  */
                 scope.selectType = function (type) {
                     scope.slide.options.type = type;
+
+                    if (type === 'subscription') {
+                        scope.loading = true;
+                    }
+                };
+
+                scope.selectSubOption = function (subOption) {
+                    console.log(subOption);
+                };
+
+                scope.submitSearch = function (search)
+                {
+                    if (search.length < 3) {
+                        console.log('Minimum search length 3');
+                        return;
+                    }
+
+                    scope.loading = true;
+
+                    scope.selectOptions = [
+                        {
+                            text: 'Places',
+                            id: 'place',
+                            subOptions: []
+                        },
+                        {
+                            text: 'Organizers',
+                            id: 'organizer',
+                            subOptions: []
+                        },
+                        {
+                            text: 'Tags',
+                            id: 'tag',
+                            subOptions: []
+                        }
+                    ];
+
+                    $http.get('/api/os2display_poster/option', {params: {search: search}}).then(function (resp) {
+                        var data = resp.data;
+
+                        for (var i = 0; i < data.places.length; i++) {
+                            var place = data.places[i];
+                            scope.selectOptions[0].subOptions.push({
+                                id: place['id'],
+                                '@id': place['@id'],
+                                text: place['name'],
+                                type: 'place'
+                            });
+                        }
+
+                        for (var i = 0; i < data.organizers.length; i++) {
+                            var organizer = data.organizers[i];
+                            scope.selectOptions[1].subOptions.push({
+                                id: organizer['id'],
+                                '@id': organizer['@id'],
+                                text: organizer['name'],
+                                type: 'organizer'
+                            });
+                        }
+
+                        for (var i = 0; i < data.tags.length; i++) {
+                            var tag = data.tags[i];
+                            scope.selectOptions[2].subOptions.push({
+                                id: tag['id'],
+                                '@id': tag['@id'],
+                                text: tag['name'],
+                                type: 'tag'
+                            });
+                        }
+                    });
                 };
 
                 ////////////////////
                 /// Subscription ///
                 ////////////////////
-
-
 
                 ////////////////////
                 /// Single       ///
@@ -40,7 +113,7 @@ angular.module('posterModule').directive('posterTool', [
                 scope.searchUrl = '';
 
                 scope.pagerBack = function () {
-                  scope.pager.centerItem = Math.max(scope.pager.centerItem - 10, 1);
+                    scope.pager.centerItem = Math.max(scope.pager.centerItem - 10, 1);
                 };
 
                 scope.pagerForward = function () {
@@ -61,18 +134,18 @@ angular.module('posterModule').directive('posterTool', [
                     return scope.pager.pages;
                 };
 
-                scope.calculatePager = function(meta) {
+                scope.calculatePager = function (meta) {
                     if (!meta) {
                         return;
                     }
 
                     scope.pager = {
-                      pages: [],
-                      currentPage: meta.page,
-                      pagerMax: meta.number_of_pages,
-                      itemsPerPage: meta.items_per_page,
-                      totalResults: meta.total_results,
-                      centerItem: meta.page
+                        pages: [],
+                        currentPage: meta.page,
+                        pagerMax: meta.number_of_pages,
+                        itemsPerPage: meta.items_per_page,
+                        totalResults: meta.total_results,
+                        centerItem: meta.page
                     };
                 };
 
@@ -96,7 +169,7 @@ angular.module('posterModule').directive('posterTool', [
                     $http.get('/api/os2display_poster/events', {
                         params: params
                     }).then(
-                        function success(response) {
+                        function success (response) {
                             $timeout(function () {
                                 scope.events = response.data.events;
                                 scope.meta = response.data.meta;
@@ -122,7 +195,7 @@ angular.module('posterModule').directive('posterTool', [
                             occurrenceId: scope.slide.options.data.occurrenceId
                         }
                     }).then(
-                        function success(response) {
+                        function success (response) {
                             $timeout(function () {
                                 scope.slide.options.data = response.data;
                             });
@@ -136,13 +209,13 @@ angular.module('posterModule').directive('posterTool', [
                             occurrenceId: occurrence['@id']
                         }
                     }).then(
-                        function success(response) {
+                        function success (response) {
                             $timeout(function () {
                                 scope.slide.options.data = response.data;
 
                                 if (scope.slide.options.data.endDate) {
-                                  var endTimestamp = new Date(scope.slide.options.data.endDate).getTime();
-                                  scope.slide.schedule_to = parseInt(endTimestamp / 1000);
+                                    var endTimestamp = new Date(scope.slide.options.data.endDate).getTime();
+                                    scope.slide.schedule_to = parseInt(endTimestamp / 1000);
                                 }
                             });
                         }
