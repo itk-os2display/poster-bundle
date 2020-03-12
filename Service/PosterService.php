@@ -187,38 +187,6 @@ class PosterService
     }
 
     /**
-     * Get searchable places.
-     *
-     * @param bool $clearCache
-     *
-     * @return array|false|mixed
-     */
-    public function getPlaces(bool $clearCache = false)
-    {
-        $cacheKey = 'poster.places';
-
-        if (!$clearCache) {
-            if ($this->cache->contains($cacheKey)) {
-                return $this->cache->fetch($cacheKey);
-            }
-        }
-
-        $res = $this->getContent('places');
-
-        $places = array_reduce($res, function ($carry, $place) {
-            $carry[] = (object) [
-                'id' => $place->id,
-                'name' => $place->name,
-            ];
-            return $carry;
-        }, []);
-
-        $this->cache->save($cacheKey, $places);
-
-        return $places;
-    }
-
-    /**
      * Get searchable tags.
      *
      * @param bool $clearCache
@@ -248,41 +216,81 @@ class PosterService
             return $carry;
         }, []);
 
-        $this->cache->save($cacheKey, $tags);
+        // Cache for 1 hour.
+        $this->cache->save($cacheKey, $tags, 60 * 60);
 
         return $tags;
     }
 
     /**
-     * Get searchable organizers.
+     * Search by type.
      *
-     * @param bool $clearCache
+     * @param $type
+     * @param null $search
+     * @param null $page
      *
-     * @return array|false|mixed
+     * @return array|mixed|\Psr\Http\Message\ResponseInterface
      */
-    public function getOrganizers(bool $clearCache = false)
+    public function search($type, $search = null, $page = null)
     {
-        $cacheKey = 'poster.organizers';
+        // Special case for Eventdatabase, since you can not search in tags.
+        if ($type === 'tags') {
+            $tags = $this->getTags();
 
-        if (!$clearCache) {
-            if ($this->cache->contains($cacheKey)) {
-                return $this->cache->fetch($cacheKey);
-            }
+            $filteredTags = array_reduce($tags, function ($carry, $tag) use ($search) {
+                if (strpos(strtolower($tag->name), $search) !== false) {
+                    $carry[] = (object) [
+                        'id' => $tag->id,
+                        'text' => $tag->name,
+                    ];
+                }
+                return $carry;
+            }, []);
+
+            return [
+                'results' => $filteredTags,
+                'pagination' => [
+                    'more' => false,
+                ]
+            ];
         }
 
-        $res = $this->getContent('organizers');
+        $client = new Client();
 
-        $organizers = array_reduce($res, function ($carry, $organizer) {
+        $params = ['timeout' => 2, 'query' => []];
+
+        if ($search !== null) {
+            $params['query']['name'] = $search;
+        }
+
+        if ($page !== null) {
+            $params['query']['page'] = $page;
+        }
+
+        $res = $client->request(
+            'GET',
+            'https://api.detskeriaarhus.dk/api/'.$type,
+            $params
+        );
+
+        $res = json_decode($res->getBody()->getContents());
+
+        $res = [
+            'results' => $res->{'hydra:member'} ?? [],
+            "pagination" => [
+                "more" => $res->{'hydra:view'}->{'hydra:next'} ?? false
+            ]
+        ];
+
+        $res['results'] = array_reduce($res['results'], function ($carry, $el) {
             $carry[] = (object) [
-                'id' => $organizer->id,
-                'name' => $organizer->name,
+                'id' => $el->id,
+                'text' => $el->name,
             ];
             return $carry;
         }, []);
 
-        $this->cache->save($cacheKey, $organizers);
-
-        return $organizers;
+        return $res;
     }
 
     /**

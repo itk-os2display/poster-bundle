@@ -3,29 +3,16 @@
 
   <div class="spinner" ng-if="loading"></div>
 
-  <h2>Place</h2>
-  <select id="os2display-poster--select-subscription-places" name="states[]" multiple="" style="width: 100%" ng-show="!loading">
-<!--    <option ng-repeat="subOption in selectOptions.places.options" value="{{subOption.id}}">
-      {{subOption.text}}
-    </option>
--->
-  </select>
-
-  <h2>Organizer</h2>
-  <select id="os2display-poster--select-subscription-organizers" name="states[]" multiple="" style="width: 100%" ng-show="!loading">
-<!--
-    <option ng-repeat="subOption in selectOptions.organizers.options" value="{{subOption.id}}">
-      {{subOption.text}}
-    </option>
-    -->
-  </select>
-
-  <h2>Tag</h2>
-  <select id="os2display-poster--select-subscription-tags" name="states[]" multiple="" style="width: 100%" ng-show="!loading">
-    <!--
-    <option ng-repeat="subOption in selectOptions.tags.options" value="{{subOption.id}}">
-      {{subOption.text}}
-    </option>
-    -->
-  </select>
+  <div ng-show="!loading">
+    <h2>Places</h2>
+    <select id="os2display-poster--select-subscription-places" multiple="" style="width: 100%"></select>
+  </div>
+  <div ng-show="!loading">
+    <h2>Organizers</h2>
+    <select id="os2display-poster--select-subscription-organizers" multiple="" style="width: 100%"></select>
+  </div>
+  <div ng-show="!loading">
+    <h2>Tags</h2>
+    <select id="os2display-poster--select-subscription-tags" multiple="" style="width: 100%"></select>
+  </div>
 </div>

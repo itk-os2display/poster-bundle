@@ -13,3 +13,7 @@ os2display_poster_occurrence:
 os2display_poster_options:
     path:     /api/os2display_poster/option
     defaults: { _controller: Os2DisplayPosterBundle:Poster:options }
+
+os2display_poster_search:
+    path:     /api/os2display_poster/search
+    defaults: { _controller: Os2DisplayPosterBundle:Poster:search }

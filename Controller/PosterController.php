@@ -52,20 +52,26 @@ class PosterController extends Controller
     }
 
     /**
-     * Get options for organizers, places and tags.
+     * Search for type.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param $type
+     * @param $search
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function optionsAction(Request $request)
+    public function searchAction(Request $request)
     {
+        $search = $request->query->get('search');
+        $type = $request->query->get('type');
+        $page = $request->query->get('page') ?? null;
+
+        if (empty($search) || empty($type)) {
+            return new JsonResponse([]);
+        }
+
         return new JsonResponse(
-            [
-                'places' => $this->get('os2display.poster.service')->getPlaces(),
-                'organizers' => $this->get('os2display.poster.service')->getOrganizers(),
-                'tags' => $this->get('os2display.poster.service')->getTags(),
-            ]
+            $this->get('os2display.poster.service')->search($type, $search, $page)
         );
     }
 }

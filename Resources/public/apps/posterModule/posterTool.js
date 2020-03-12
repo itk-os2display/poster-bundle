@@ -35,29 +35,21 @@ angular.module('posterModule').directive('posterTool', [
                 /// Subscription ///
                 ////////////////////
 
-                function setupOptions(type, domId, selectionArray, elements) {
-                    for (var i = 0; i < elements.length; i++) {
-                        var element = elements[i];
-                        scope.selectOptions[type].options.push({
-                            id: element['id'],
-                            text: element['name']
-                        });
-                    }
-
-                    jQuery(domId).select2({
-                        data: scope.selectOptions[type].options
-                    });
-
-                    $(domId).on('select2:select', function (e) {
-                        var data = e.params.data;
-                        selectionArray[data.id] = data;
-                        console.log('select ' + type + ': ' + data.id + " - " + data.text);
-                    });
-
-                    $(domId).on('select2:unselect', function (e) {
-                        var data = e.params.data;
-                        selectionArray[data.id] = null;
-                        console.log('unselect ' + type + ': ' + data.id + " - " + data.text);
+                function setupFilter(type) {
+                    jQuery('#os2display-poster--select-subscription-' + type).select2({
+                        ajax: {
+                            url: '/api/os2display_poster/search',
+                            dataType: 'json',
+                            delay: 500,
+                            data: function (params) {
+                                return {
+                                    search: params.term,
+                                    page: params.page || 1,
+                                    type: type
+                                };
+                            }
+                        },
+                        minimumInputLength: 1
                     });
                 }
 
@@ -72,79 +64,14 @@ angular.module('posterModule').directive('posterTool', [
                         }
                     }
 
-                    scope.selectOptions = {
-                        places: {
-                            text: 'Places',
-                            id: 'place',
-                            options: []
-                        },
-                        organizers: {
-                            text: 'Organizers',
-                            id: 'organizer',
-                            options: []
-                        },
-                        tags: {
-                            text: 'Tags',
-                            id: 'tag',
-                            options: []
-                        }
-                    };
+                    // Hack: Delay to make sure the template has been loaded.
+                    $timeout(function () {
+                        setupFilter('places');
+                        setupFilter('organizers');
+                        setupFilter('tags');
+                    }, 1000);
 
-                    $http.get('/api/os2display_poster/option').then(function (resp) {
-                        var data = resp.data;
-
-                        console.log(data);
-
-                        setupOptions('places', '#os2display-poster--select-subscription-places', scope.slide.options.subscription.selectedPlaces, data.places);
-                        setupOptions('organizers', '#os2display-poster--select-subscription-organizers', scope.slide.options.subscription.selectedOrganizers, data.organizers);
-                        setupOptions('tags', '#os2display-poster--select-subscription-tags', scope.slide.options.subscription.selectedTags, data.tags);
-
-                        /*
-                        for (var i = 0; i < data.organizers.length; i++) {
-                            var organizer = data.organizers[i];
-                            scope.selectOptions[1].subOptions.push({
-                                id: organizer['id'],
-                                text: organizer['name']
-                            });
-                        }
-                        $timeout(function () {
-                            jQuery('#os2display-poster--select-subscription-organizers').select2();
-                            $('#os2display-poster--select-subscription-organizers').on('select2:select', function (e) {
-                                var data = e.params.data;
-                                slide.options.subscription.selectedOrganizers[data.id] = data;
-                                console.log('select organizer: ' + data.id + " - " + data.text);
-                            });
-                            $('#os2display-poster--select-subscription-organizers').on('select2:unselect', function (e) {
-                                var data = e.params.data;
-                                slide.options.subscription.selectedOrganizers[data.id] = null;
-                                console.log('unselect organizer: ' + data.id + " - " + data.text);
-                            });
-                        });
-
-                        for (var i = 0; i < data.tags.length; i++) {
-                            var tag = data.tags[i];
-                            scope.selectOptions.tags.push({
-                                id: tag['id'],
-                                text: tag['name']
-                            });
-                        }
-                        $timeout(function() {
-                            jQuery('#os2display-poster--select-subscription-tags').select2();
-                            $('#os2display-poster--select-subscription-tags').on('select2:select', function (e) {
-                                var data = e.params.data;
-                                slide.options.subscription.selectedTags[data.id] = data;
-                                console.log('select tag: ' + data.id + " - " + data.text);
-                            });
-                            $('#os2display-poster--select-subscription-tags').on('select2:unselect', function (e) {
-                                var data = e.params.data;
-                                slide.options.subscription.selectedTags[data.id] = null;
-                                console.log('unselect tag: ' + data.id + " - " + data.text);
-                            });
-                        });
-                        */
-
-                        scope.loading = false;
-                    });
+                    scope.loading = false;
                 }
 
                 ////////////////////
