@@ -189,55 +189,100 @@ class PosterService
     /**
      * Get searchable places.
      *
+     * @param bool $clearCache
+     *
      * @return array|false|mixed
      */
-    public function getPlaces()
+    public function getPlaces(bool $clearCache = false)
     {
         $cacheKey = 'poster.places';
-        if ($this->cache->contains($cacheKey)) {
-            return $this->cache->fetch($cacheKey);
+
+        if (!$clearCache) {
+            if ($this->cache->contains($cacheKey)) {
+                return $this->cache->fetch($cacheKey);
+            }
         }
 
         $res = $this->getContent('places');
-        $this->cache->save($cacheKey, $res, 60 * 60 * 24);
 
-        return $res;
+        $places = array_reduce($res, function ($carry, $place) {
+            $carry[] = (object) [
+                'id' => $place->id,
+                'name' => $place->name,
+            ];
+            return $carry;
+        }, []);
+
+        $this->cache->save($cacheKey, $places);
+
+        return $places;
     }
 
     /**
      * Get searchable tags.
      *
+     * @param bool $clearCache
+     *
      * @return array|false|mixed
      */
-    public function getTags()
+    public function getTags(bool $clearCache = false)
     {
         $cacheKey = 'poster.tags';
-        if ($this->cache->contains($cacheKey)) {
-            return $this->cache->fetch($cacheKey);
+
+        if (!$clearCache) {
+            if ($this->cache->contains($cacheKey)) {
+                return $this->cache->fetch($cacheKey);
+            }
         }
 
         $res = $this->getContent('tags');
-        $this->cache->save($cacheKey, $res, 60 * 60 * 24);
 
-        return $res;
+        $tags = array_reduce($res, function ($carry, $tag) {
+            $split = explode('/', $tag->{'@id'});
+            $id = end($split);
+
+            $carry[] = (object) [
+                'id' => $id,
+                'name' => $tag->name,
+            ];
+            return $carry;
+        }, []);
+
+        $this->cache->save($cacheKey, $tags);
+
+        return $tags;
     }
 
     /**
      * Get searchable organizers.
      *
+     * @param bool $clearCache
+     *
      * @return array|false|mixed
      */
-    public function getOrganizers()
+    public function getOrganizers(bool $clearCache = false)
     {
         $cacheKey = 'poster.organizers';
-        if ($this->cache->contains($cacheKey)) {
-            return $this->cache->fetch($cacheKey);
+
+        if (!$clearCache) {
+            if ($this->cache->contains($cacheKey)) {
+                return $this->cache->fetch($cacheKey);
+            }
         }
 
         $res = $this->getContent('organizers');
-        $this->cache->save($cacheKey, $res, 60 * 60 * 24);
 
-        return $res;
+        $organizers = array_reduce($res, function ($carry, $organizer) {
+            $carry[] = (object) [
+                'id' => $organizer->id,
+                'name' => $organizer->name,
+            ];
+            return $carry;
+        }, []);
+
+        $this->cache->save($cacheKey, $organizers);
+
+        return $organizers;
     }
 
     /**
