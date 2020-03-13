@@ -16,6 +16,7 @@ angular.module('posterModule').directive('posterTool', [
             link: function (scope, el) {
                 scope.selectedOption = null;
                 scope.selectOptions = [];
+                scope.subscription = {};
 
                 /**
                  * Select type of slide.
@@ -64,7 +65,19 @@ angular.module('posterModule').directive('posterTool', [
 
                         $http.get('/api/os2display_poster/search_occurrences', {
                             params: search
-                        })
+                        }).then(
+                            function (resp) {
+                                var data = resp.data.results;
+
+                                $timeout(function () {
+                                    scope.subscription.foundEvents = data;
+                                });
+                                console.log(data);
+                            },
+                            function (err) {
+                                console.log('error', err);
+                            }
+                        )
                     });
                 }
 

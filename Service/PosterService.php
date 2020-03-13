@@ -393,19 +393,19 @@ class PosterService
         ];
 
         if (isset($query['organizers'])) {
-            $params['query']['event.organizer.id'] = $query['organizers'];
+            $params['query']['organizer.id'] = $query['organizers'];
         }
         if (isset($query['places'])) {
-            $params['query']['place.id'] = $query['places'];
+            $params['query']['occurrences.place.id'] = $query['places'];
         }
         if (isset($query['tags'])) {
-            $params['query']['event.tag.id'] = $query['tags'];
+            $params['query']['tags'] = $query['tags'];
         }
 
         $client = new Client();
         $requestResult = $client->request(
             'GET',
-            'https://api.detskeriaarhus.dk/api/occurrences',
+            'https://api.detskeriaarhus.dk/api/events',
             $params
         );
 
@@ -424,22 +424,27 @@ class PosterService
                 $split = explode('/', $el->{'@id'});
                 $id = end($split);
 
-                $text = $el->event->name ?? null;
+                $text = $el->name ?? null;
 
-                $image = $el->event->image ?? null;
+                $image = $el->image ?? null;
+                $imageSmall = $el->images->small ?? null;
 
-                $startDate = $el->startDate ?? null;
-                $endDate = $el->endDate ?? null;
+                $startDate = $el->occurrences[0]->startDate ?? null;
+                $endDate = $el->occurrences[0]->endDate ?? null;
 
-                $place = $el->place->name ?? null;
+                $place = $el->occurrences[0]->place->name ?? null;
+
+                $organizer = $el->organizer->name ?? null;
 
                 $newObject = (object)[
                     'id' => $id,
                     'text' => $text,
                     'image' => $image,
+                    'imageSmall' => $imageSmall,
                     'startDate' => $startDate,
                     'endDate' => $endDate,
                     'place' => $place,
+                    'organizer' => $organizer,
                 ];
 
                 $carry[] = $newObject;
