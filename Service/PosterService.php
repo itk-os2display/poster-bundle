@@ -11,6 +11,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Os2Display\CoreBundle\Entity\Slide;
 use Doctrine\Common\Cache\CacheProvider;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class PosterService
 {
@@ -205,16 +206,21 @@ class PosterService
 
         $res = $this->getContent('tags');
 
-        $tags = array_reduce($res, function ($carry, $tag) {
-            $split = explode('/', $tag->{'@id'});
-            $id = end($split);
+        $tags = array_reduce(
+            $res,
+            function ($carry, $tag) {
+                $split = explode('/', $tag->{'@id'});
+                $id = end($split);
 
-            $carry[] = (object) [
-                'id' => $id,
-                'name' => $tag->name,
-            ];
-            return $carry;
-        }, []);
+                $carry[] = (object)[
+                    'id' => $id,
+                    'name' => $tag->name,
+                ];
+
+                return $carry;
+            },
+            []
+        );
 
         // Cache for 1 hour.
         $this->cache->save($cacheKey, $tags, 60 * 60);
@@ -226,32 +232,38 @@ class PosterService
      * Search by type.
      *
      * @param $type
-     * @param null $search
-     * @param null $page
+     * @param null $query
      *
      * @return array|mixed|\Psr\Http\Message\ResponseInterface
      */
-    public function search($type, $search = null, $page = null)
+    public function search($type, $query = [])
     {
         // Special case for Eventdatabase, since you can not search in tags.
         if ($type === 'tags') {
             $tags = $this->getTags();
 
-            $filteredTags = array_reduce($tags, function ($carry, $tag) use ($search) {
-                if (strpos(strtolower($tag->name), $search) !== false) {
-                    $carry[] = (object) [
-                        'id' => $tag->id,
-                        'text' => $tag->name,
-                    ];
-                }
-                return $carry;
-            }, []);
+            $search = $query['name'];
+
+            $filteredTags = array_reduce(
+                $tags,
+                function ($carry, $tag) use ($search) {
+                    if (strpos(strtolower($tag->name), $search) !== false) {
+                        $carry[] = (object)[
+                            'id' => $tag->id,
+                            'text' => $tag->name,
+                        ];
+                    }
+
+                    return $carry;
+                },
+                []
+            );
 
             return [
                 'results' => $filteredTags,
                 'pagination' => [
                     'more' => false,
-                ]
+                ],
             ];
         }
 
@@ -259,12 +271,8 @@ class PosterService
 
         $params = ['timeout' => 2, 'query' => []];
 
-        if ($search !== null) {
-            $params['query']['name'] = $search;
-        }
-
-        if ($page !== null) {
-            $params['query']['page'] = $page;
+        if ($query !== null) {
+            $params['query'] = $query;
         }
 
         $res = $client->request(
@@ -278,17 +286,33 @@ class PosterService
         $res = [
             'results' => $res->{'hydra:member'} ?? [],
             "pagination" => [
-                "more" => $res->{'hydra:view'}->{'hydra:next'} ?? false
-            ]
+                "more" => isset($res->{'hydra:view'}->{'hydra:next'}),
+            ],
         ];
 
-        $res['results'] = array_reduce($res['results'], function ($carry, $el) {
-            $carry[] = (object) [
-                'id' => $el->id,
-                'text' => $el->name,
-            ];
-            return $carry;
-        }, []);
+        $res['results'] = array_reduce(
+            $res['results'],
+            function ($carry, $el) use ($type) {
+                $id = $el->id ?? null;
+
+                if ($id === null) {
+                    $split = explode('/', $el->{'@id'});
+                    $id = end($split);
+                }
+
+                $text = $el->name ?? null;
+
+                $newObject = (object)[
+                    'id' => $id,
+                    'text' => $text,
+                ];
+
+                $carry[] = $newObject;
+
+                return $carry;
+            },
+            []
+        );
 
         return $res;
     }
@@ -343,5 +367,88 @@ class PosterService
         }
 
         return $result;
+    }
+
+    /**
+     *
+     *
+     * @param array $query
+     *
+     * @return array|mixed|\Psr\Http\Message\ResponseInterface
+     * @throws \Exception
+     */
+    public function searchOccurrences(array $query)
+    {
+        $params = [
+            'timeout' => 2,
+            'query' => [
+                'items_per_page' => 5,
+                'order' => [
+                    'startDate' => 'asc'
+                ],
+                'startDate' => [
+                    'after' => (new \DateTime())->format('c')
+                ]
+            ]
+        ];
+
+        if (isset($query['organizers'])) {
+            $params['query']['event.organizer.id'] = $query['organizers'];
+        }
+        if (isset($query['places'])) {
+            $params['query']['place.id'] = $query['places'];
+        }
+        if (isset($query['tags'])) {
+            $params['query']['event.tag.id'] = $query['tags'];
+        }
+
+        $client = new Client();
+        $requestResult = $client->request(
+            'GET',
+            'https://api.detskeriaarhus.dk/api/occurrences',
+            $params
+        );
+
+        $body = json_decode($requestResult->getBody()->getContents());
+
+        $res = [
+            'results' => $body->{'hydra:member'} ?? [],
+            "pagination" => [
+                "more" => isset($body->{'hydra:view'}->{'hydra:next'}),
+            ],
+        ];
+
+        $res['results'] = array_reduce(
+            $res['results'],
+            function ($carry, $el) {
+                $split = explode('/', $el->{'@id'});
+                $id = end($split);
+
+                $text = $el->event->name ?? null;
+
+                $image = $el->event->image ?? null;
+
+                $startDate = $el->startDate ?? null;
+                $endDate = $el->endDate ?? null;
+
+                $place = $el->place->name ?? null;
+
+                $newObject = (object)[
+                    'id' => $id,
+                    'text' => $text,
+                    'image' => $image,
+                    'startDate' => $startDate,
+                    'endDate' => $endDate,
+                    'place' => $place,
+                ];
+
+                $carry[] = $newObject;
+
+                return $carry;
+            },
+            []
+        );
+
+        return $res;
     }
 }

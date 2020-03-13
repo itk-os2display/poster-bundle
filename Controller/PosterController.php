@@ -55,23 +55,42 @@ class PosterController extends Controller
      * Search for type.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
-     * @param $type
-     * @param $search
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function searchAction(Request $request)
     {
-        $search = $request->query->get('search');
-        $type = $request->query->get('type');
-        $page = $request->query->get('page') ?? null;
+        $query = $request->query->all();
+        $type = $query['type'];
 
-        if (empty($search) || empty($type)) {
+        if (empty($query) || empty($type)) {
+            return new JsonResponse([]);
+        }
+
+        unset($query['type']);
+
+        return new JsonResponse(
+            $this->get('os2display.poster.service')->search($type, $query)
+        );
+    }
+
+    /**
+     * Search for occurences.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function searchOccurencesAction(Request $request)
+    {
+        $query = $request->query->all();
+
+        if (empty($query)) {
             return new JsonResponse([]);
         }
 
         return new JsonResponse(
-            $this->get('os2display.poster.service')->search($type, $search, $page)
+            $this->get('os2display.poster.service')->searchOccurrences($query)
         );
     }
 }

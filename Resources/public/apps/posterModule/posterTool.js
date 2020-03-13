@@ -35,21 +35,69 @@ angular.module('posterModule').directive('posterTool', [
                 /// Subscription ///
                 ////////////////////
 
-                function setupFilter(type) {
-                    jQuery('#os2display-poster--select-subscription-' + type).select2({
+                function getSubscriptionResults() {
+                    $timeout(function () {
+                        var selections = angular.copy(scope.slide.options.subscription);
+                        console.log('TODO: Get subscription results');
+                        console.log(selections);
+
+                        var search = {
+                            tags: [],
+                            places: [],
+                            organizers: []
+                        };
+
+                        for (var tag in selections.selectedTags) {
+                            tag = selections.selectedTags[tag];
+                            search.tags.push(tag.id);
+                        }
+
+                        for (var org in selections.selectedOrganizers) {
+                            org = selections.selectedOrganizers[org];
+                            search.organizers.push(org.id);
+                        }
+
+                        for (var place in selections.selectedPlaces) {
+                            place = selections.selectedPlaces[place];
+                            search.places.push(place.id);
+                        }
+
+                        $http.get('/api/os2display_poster/search_occurrences', {
+                            params: search
+                        })
+                    });
+                }
+
+                function setupFilter(type, selectionArray) {
+                    var element = jQuery('#os2display-poster--select-subscription-' + type);
+                    element.select2({
                         ajax: {
                             url: '/api/os2display_poster/search',
                             dataType: 'json',
                             delay: 500,
                             data: function (params) {
                                 return {
-                                    search: params.term,
+                                    name: params.term,
                                     page: params.page || 1,
                                     type: type
                                 };
                             }
                         },
                         minimumInputLength: 1
+                    });
+
+                    element.on('select2:select', function (e) {
+                        var data = e.params.data;
+                        selectionArray[data.id] = data;
+                        console.log('select ' + type + ': ' + data.id + " - " + data.text);
+                        getSubscriptionResults();
+                    });
+
+                    element.on('select2:unselect', function (e) {
+                        var data = e.params.data;
+                        selectionArray[data.id] = null;
+                        console.log('unselect ' + type + ': ' + data.id + " - " + data.text);
+                        getSubscriptionResults();
                     });
                 }
 
@@ -66,9 +114,9 @@ angular.module('posterModule').directive('posterTool', [
 
                     // Hack: Delay to make sure the template has been loaded.
                     $timeout(function () {
-                        setupFilter('places');
-                        setupFilter('organizers');
-                        setupFilter('tags');
+                        setupFilter('places', scope.slide.options.subscription.selectedPlaces);
+                        setupFilter('organizers', scope.slide.options.subscription.selectedOrganizers);
+                        setupFilter('tags', scope.slide.options.subscription.selectedTags);
                     }, 1000);
 
                     scope.loading = false;
