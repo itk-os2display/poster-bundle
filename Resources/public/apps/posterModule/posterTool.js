@@ -14,29 +14,41 @@ angular.module('posterModule').directive('posterTool', [
                 tool: '='
             },
             link: function (scope, el) {
-                scope.selectedOption = null;
-                scope.selectOptions = [];
-                scope.subscription = {};
-
                 /**
-                 * Select type of slide.
+                 * Initialize tool depending on type.
                  *
                  * @param type
-                 *   'single' or 'subscription'
                  */
-                scope.selectType = function (type) {
-                    scope.slide.options.type = type;
-
+                function init(type) {
                     if (type === 'subscription') {
                         initSubscription();
                     }
-                };
+                    else if (type === 'single') {
+                        initSingle();
+                    }
+                }
+
+                if (!scope.slide.options.type) {
+                    /**
+                     * Select type of slide.
+                     *
+                     * @param type
+                     *   'single' or 'subscription'
+                     */
+                    scope.selectType = function (type) {
+                        scope.slide.options.type = type;
+                        init(type);
+                    };
+                } else {
+                    init(scope.slide.options.type);
+                }
 
                 ////////////////////
                 /// Subscription ///
                 ////////////////////
 
                 function getSubscriptionResults() {
+                    scope.loadingSearchResults = true;
                     $timeout(function () {
                         var selections = angular.copy(scope.slide.options.subscription);
                         console.log('TODO: Get subscription results');
@@ -50,17 +62,23 @@ angular.module('posterModule').directive('posterTool', [
 
                         for (var tag in selections.selectedTags) {
                             tag = selections.selectedTags[tag];
-                            search.tags.push(tag.id);
+                            if (tag !== null) {
+                                search.tags.push(tag.id);
+                            }
                         }
 
                         for (var org in selections.selectedOrganizers) {
                             org = selections.selectedOrganizers[org];
-                            search.organizers.push(org.id);
+                            if (org !== null) {
+                                search.organizers.push(org.id);
+                            }
                         }
 
                         for (var place in selections.selectedPlaces) {
                             place = selections.selectedPlaces[place];
-                            search.places.push(place.id);
+                            if (place !== null) {
+                                search.places.push(place.id);
+                            }
                         }
 
                         $http.get('/api/os2display_poster/search_occurrences', {
@@ -72,7 +90,8 @@ angular.module('posterModule').directive('posterTool', [
                                 $timeout(function () {
                                     scope.subscription.foundEvents = data;
                                 });
-                                console.log(data);
+
+                                scope.loadingSearchResults = false;
                             },
                             function (err) {
                                 console.log('error', err);
@@ -83,6 +102,7 @@ angular.module('posterModule').directive('posterTool', [
 
                 function setupFilter(type, selectionArray) {
                     var element = jQuery('#os2display-poster--select-subscription-' + type);
+
                     element.select2({
                         ajax: {
                             url: '/api/os2display_poster/search',
@@ -102,20 +122,26 @@ angular.module('posterModule').directive('posterTool', [
                     element.on('select2:select', function (e) {
                         var data = e.params.data;
                         selectionArray[data.id] = data;
-                        console.log('select ' + type + ': ' + data.id + " - " + data.text);
                         getSubscriptionResults();
                     });
 
                     element.on('select2:unselect', function (e) {
                         var data = e.params.data;
                         selectionArray[data.id] = null;
-                        console.log('unselect ' + type + ': ' + data.id + " - " + data.text);
                         getSubscriptionResults();
                     });
+
+                    // Select previous selections.
+                    for (var selection in selectionArray) {
+                        selection = selectionArray[selection];
+                        var newOption = new Option(selection.text, selection.id, true, true);
+                        element.append(newOption).trigger('change');
+                    }
                 }
 
                 function initSubscription() {
                     scope.loading = true;
+                    scope.subscription = {};
 
                     if (!scope.slide.options.subscription) {
                         scope.slide.options.subscription = {
@@ -130,131 +156,135 @@ angular.module('posterModule').directive('posterTool', [
                         setupFilter('places', scope.slide.options.subscription.selectedPlaces);
                         setupFilter('organizers', scope.slide.options.subscription.selectedOrganizers);
                         setupFilter('tags', scope.slide.options.subscription.selectedTags);
+
+                        scope.loading = false;
                     }, 1000);
 
-                    scope.loading = false;
+                    getSubscriptionResults();
                 }
 
                 ////////////////////
                 /// Single       ///
                 ////////////////////
 
-                // Search by name as default.
-                scope.typeSelect = 'searchName';
-                scope.searchName = '';
-                scope.searchUrl = '';
+                function initSingle() {
+                    // Search by name as default.
+                    scope.typeSelect = 'searchName';
+                    scope.searchName = '';
+                    scope.searchUrl = '';
 
-                scope.pagerBack = function () {
-                    scope.pager.centerItem = Math.max(scope.pager.centerItem - 10, 1);
-                };
-
-                scope.pagerForward = function () {
-                    scope.pager.centerItem = Math.min(scope.pager.centerItem + 10, scope.pager.pagerMax);
-                };
-
-                scope.getPagerPages = function () {
-                    scope.pager.pages = [];
-
-                    var center10Page = parseInt(scope.pager.centerItem / 10);
-
-                    for (var i = 1; i <= 10; i++) {
-                        if (i + center10Page * 10 <= scope.pager.pagerMax) {
-                            scope.pager.pages.push(i + center10Page * 10);
-                        }
-                    }
-
-                    return scope.pager.pages;
-                };
-
-                scope.calculatePager = function (meta) {
-                    if (!meta) {
-                        return;
-                    }
-
-                    scope.pager = {
-                        pages: [],
-                        currentPage: meta.page,
-                        pagerMax: meta.number_of_pages,
-                        itemsPerPage: meta.items_per_page,
-                        totalResults: meta.total_results,
-                        centerItem: meta.page
+                    scope.pagerBack = function () {
+                        scope.pager.centerItem = Math.max(scope.pager.centerItem - 10, 1);
                     };
-                };
 
-                scope.search = function (page) {
-                    scope.displayEvent = null;
-                    scope.events = null;
+                    scope.pagerForward = function () {
+                        scope.pager.centerItem = Math.min(scope.pager.centerItem + 10, scope.pager.pagerMax);
+                    };
 
-                    var params = {};
+                    scope.getPagerPages = function () {
+                        scope.pager.pages = [];
 
-                    if (page) {
-                        params.page = page;
-                    }
+                        var center10Page = parseInt(scope.pager.centerItem / 10);
 
-                    if (scope.typeSelect === 'searchName') {
-                        params.name = scope.searchName;
-                    }
-                    else if (scope.typeSelect === 'searchUrl') {
-                        params.url = scope.searchUrl;
-                    }
-
-                    $http.get('/api/os2display_poster/events', {
-                        params: params
-                    }).then(
-                        function success (response) {
-                            $timeout(function () {
-                                scope.events = response.data.events;
-                                scope.meta = response.data.meta;
-
-                                scope.calculatePager(scope.meta);
-                            });
+                        for (var i = 1; i <= 10; i++) {
+                            if (i + center10Page * 10 <= scope.pager.pagerMax) {
+                                scope.pager.pages.push(i + center10Page * 10);
+                            }
                         }
-                    );
-                };
 
-                scope.clickEvent = function (event) {
-                    scope.displayEvent = event;
+                        return scope.pager.pages;
+                    };
 
-                    // If only one occurrence, select that.
-                    if (scope.displayEvent.occurrences.length === 1) {
-                        scope.clickOccurrence(scope.displayEvent.occurrences[0]);
-                    }
-                };
-
-                scope.refreshEvent = function () {
-                    $http.get('/api/os2display_poster/occurrence', {
-                        params: {
-                            occurrenceId: scope.slide.options.data.occurrenceId
+                    scope.calculatePager = function (meta) {
+                        if (!meta) {
+                            return;
                         }
-                    }).then(
-                        function success (response) {
-                            $timeout(function () {
-                                scope.slide.options.data = response.data;
-                            });
-                        }
-                    );
-                };
 
-                scope.clickOccurrence = function (occurrence) {
-                    $http.get('/api/os2display_poster/occurrence', {
-                        params: {
-                            occurrenceId: occurrence['@id']
-                        }
-                    }).then(
-                        function success (response) {
-                            $timeout(function () {
-                                scope.slide.options.data = response.data;
+                        scope.pager = {
+                            pages: [],
+                            currentPage: meta.page,
+                            pagerMax: meta.number_of_pages,
+                            itemsPerPage: meta.items_per_page,
+                            totalResults: meta.total_results,
+                            centerItem: meta.page
+                        };
+                    };
 
-                                if (scope.slide.options.data.endDate) {
-                                    var endTimestamp = new Date(scope.slide.options.data.endDate).getTime();
-                                    scope.slide.schedule_to = parseInt(endTimestamp / 1000);
-                                }
-                            });
-                        }
-                    );
+                    scope.search = function (page) {
+                        scope.displayEvent = null;
+                        scope.events = null;
 
-                    scope.close();
-                };
+                        var params = {};
+
+                        if (page) {
+                            params.page = page;
+                        }
+
+                        if (scope.typeSelect === 'searchName') {
+                            params.name = scope.searchName;
+                        }
+                        else if (scope.typeSelect === 'searchUrl') {
+                            params.url = scope.searchUrl;
+                        }
+
+                        $http.get('/api/os2display_poster/events', {
+                            params: params
+                        }).then(
+                            function success (response) {
+                                $timeout(function () {
+                                    scope.events = response.data.events;
+                                    scope.meta = response.data.meta;
+
+                                    scope.calculatePager(scope.meta);
+                                });
+                            }
+                        );
+                    };
+
+                    scope.clickEvent = function (event) {
+                        scope.displayEvent = event;
+
+                        // If only one occurrence, select that.
+                        if (scope.displayEvent.occurrences.length === 1) {
+                            scope.clickOccurrence(scope.displayEvent.occurrences[0]);
+                        }
+                    };
+
+                    scope.refreshEvent = function () {
+                        $http.get('/api/os2display_poster/occurrence', {
+                            params: {
+                                occurrenceId: scope.slide.options.data.occurrenceId
+                            }
+                        }).then(
+                            function success (response) {
+                                $timeout(function () {
+                                    scope.slide.options.data = response.data;
+                                });
+                            }
+                        );
+                    };
+
+                    scope.clickOccurrence = function (occurrence) {
+                        $http.get('/api/os2display_poster/occurrence', {
+                            params: {
+                                occurrenceId: occurrence['@id']
+                            }
+                        }).then(
+                            function success (response) {
+                                $timeout(function () {
+                                    scope.slide.options.data = response.data;
+
+                                    if (scope.slide.options.data.endDate) {
+                                        var endTimestamp = new Date(scope.slide.options.data.endDate).getTime();
+                                        scope.slide.schedule_to = parseInt(endTimestamp / 1000);
+                                    }
+                                });
+                            }
+                        );
+
+                        scope.close();
+                    };
+                }
             },
             templateUrl: '/bundles/os2displayposter/apps/posterModule/posterTool.html'
         };

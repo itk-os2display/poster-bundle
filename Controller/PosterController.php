@@ -80,8 +80,9 @@ class PosterController extends Controller
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws \Exception
      */
-    public function searchOccurencesAction(Request $request)
+    public function searchOccurrencesAction(Request $request)
     {
         $query = $request->query->all();
 

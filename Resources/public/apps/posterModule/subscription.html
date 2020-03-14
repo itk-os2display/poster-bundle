@@ -26,11 +26,14 @@
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="result in subscription.foundEvents">
+    <tr ng-repeat="result in subscription.foundEvents" ng-if="!loadingSearchResults">
       <td><img ng-src="{{ result.imageSmall }}" alt="{{ result.text }}" style="max-width: 80px;" ng-if="result.imageSmall"></td>
       <td><strong>{{ result.text }}</strong><br>{{ result.organizer }}</td>
       <td>{{ result.place }}</td>
       <td>{{ result.startDate | date }} - {{ result.endDate | date }}</td>
+    </tr>
+    <tr ng-if="loadingSearchResults">
+      <td colspan="4"><div class="spinner"></div></td>
     </tr>
     </tbody>
   </table>

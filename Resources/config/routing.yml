@@ -10,14 +10,10 @@ os2display_poster_occurrence:
     path:     /api/os2display_poster/occurrence
     defaults: { _controller: Os2DisplayPosterBundle:Poster:occurrence }
 
-os2display_poster_options:
-    path:     /api/os2display_poster/option
-    defaults: { _controller: Os2DisplayPosterBundle:Poster:options }
-
 os2display_poster_search:
     path:     /api/os2display_poster/search
     defaults: { _controller: Os2DisplayPosterBundle:Poster:search }
 
 os2display_poster_search_occurrences:
     path:     /api/os2display_poster/search_occurrences
-    defaults: { _controller: Os2DisplayPosterBundle:Poster:searchOccurences }
+    defaults: { _controller: Os2DisplayPosterBundle:Poster:searchOccurrences }
