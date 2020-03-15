@@ -180,6 +180,10 @@ angular.module('posterModule').directive('posterTool', [
                         scope.slide.options.overrides = {};
                     }
 
+                    scope.toggleOverrides = function () {
+                        scope.displayOverrides = !scope.displayOverrides;
+                    }
+
                     scope.pagerBack = function () {
                         scope.pager.centerItem = Math.max(scope.pager.centerItem - 10, 1);
                     };
