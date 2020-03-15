@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Os2Display\PosterBundle\Events\GetEvents;
 use Os2Display\PosterBundle\Events\GetEvent;
 use Os2Display\PosterBundle\Events\GetOccurrence;
+use Os2Display\PosterBundle\Events\SearchEvents;
 
 /**
  * Class EventdatabasenIntegration.
@@ -38,6 +39,7 @@ class EventdatabasenIntegration
             GetEvents::EVENT => 'getEvents',
             GetEvent::EVENT => 'getEvent',
             GetOccurrence::EVENT => 'getOccurrence',
+            SearchEvents::EVENT => 'searchEvents',
         ];
     }
 
@@ -188,5 +190,130 @@ class EventdatabasenIntegration
                 $event->setNotFound(true);
             }
         }
+    }
+
+    /**
+     * Search for events by query.
+     *
+     * @param \Os2Display\PosterBundle\Events\SearchEvents $event
+     *
+     * @throws \Exception
+     */
+    public function searchEvents(SearchEvents $event)
+    {
+        if (!$this->enabled) {
+            return;
+        }
+
+        $query = $event->getQuery();
+
+        $params = [
+            'timeout' => 2,
+            'query' => [
+                'items_per_page' => 5,
+                'order' => [
+                    'startDate' => 'asc'
+                ],
+                'startDate' => [
+                    'after' => (new \DateTime())->format('c')
+                ]
+            ]
+        ];
+
+        if (isset($query['organizers'])) {
+            $params['query']['organizer.id'] = $query['organizers'];
+        }
+        if (isset($query['places'])) {
+            $params['query']['occurrences.place.id'] = $query['places'];
+        }
+        if (isset($query['tags'])) {
+            $params['query']['tags'] = $query['tags'];
+        }
+
+        $client = new Client();
+        $requestResult = $client->request(
+            'GET',
+            'https://api.detskeriaarhus.dk/api/events',
+            $params
+        );
+
+        $body = json_decode($requestResult->getBody()->getContents());
+
+        $res = [
+            'results' => $body->{'hydra:member'} ?? [],
+            "pagination" => [
+                "more" => isset($body->{'hydra:view'}->{'hydra:next'}),
+            ],
+        ];
+
+        $res['results'] = array_reduce(
+            $res['results'],
+            function ($carry, $el) {
+                $split = explode('/', $el->{'@id'});
+                $id = end($split);
+
+                $text = $el->name ?? null;
+
+                $image = $el->image ?? null;
+                $imageSmall = $el->images->small ?? null;
+
+                $startDate = $el->occurrences[0]->startDate ?? null;
+                $endDate = $el->occurrences[0]->endDate ?? null;
+
+                $place = $el->occurrences[0]->place->name ?? null;
+
+                $organizer = $el->organizer->name ?? null;
+
+                $newObject = (object)[
+                    'id' => $id,
+                    'text' => $text,
+                    'image' => $image,
+                    'imageSmall' => $imageSmall,
+                    'startDate' => $startDate,
+                    'endDate' => $endDate,
+                    'place' => $place,
+                    'organizer' => $organizer,
+                ];
+
+                if (!empty($el->occurrences)) {
+                    $firstOccurrence = $el->occurrences[0];
+
+                    $eventOccurrence = (object) [
+                        'eventId' => $id,
+                        'occurrenceId' => $firstOccurrence->{'@id'},
+                        'ticketPurchaseUrl' => $el->{'ticketPurchaseUrl'},
+                        'excerpt' =>  $el->{'excerpt'},
+                        'description' =>  strip_tags($el->{'description'}),
+                        'name' =>  $el->{'name'},
+                        'url' =>  $el->{'url'},
+                        'image' =>  $image,
+                        'startDate' =>  $firstOccurrence->{'startDate'},
+                        'endDate' =>  $firstOccurrence->{'endDate'},
+                        'ticketPriceRange' =>  $firstOccurrence->{'ticketPriceRange'},
+                        'eventStatusText' =>  $firstOccurrence->{'eventStatusText'},
+                    ];
+
+                    if (isset($results->place)) {
+                        $eventOccurrence->place = (object)[
+                            'name' => $el->place->name,
+                            'streetAddress' => $el->place->streetAddress,
+                            'addressLocality' => $el->place->addressLocality,
+                            'postalCode' => $el->place->postalCode,
+                            'description' => strip_tags($el->place->description),
+                            'image' => $el->place->image,
+                            'telephone' => $el->place->telephone,
+                        ];
+                    }
+                    $newObject->occurrence = $eventOccurrence;
+                }
+
+                $carry[] = $newObject;
+
+                return $carry;
+            },
+            []
+        );
+
+        $event->setResults($res);
     }
 }

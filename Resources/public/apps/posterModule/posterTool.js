@@ -51,8 +51,6 @@ angular.module('posterModule').directive('posterTool', [
                     scope.loadingSearchResults = true;
                     $timeout(function () {
                         var selections = angular.copy(scope.slide.options.subscription);
-                        console.log('TODO: Get subscription results');
-                        console.log(selections);
 
                         var search = {
                             tags: [],
@@ -81,7 +79,7 @@ angular.module('posterModule').directive('posterTool', [
                             }
                         }
 
-                        $http.get('/api/os2display_poster/search_occurrences', {
+                        $http.get('/api/os2display_poster/search_events', {
                             params: search
                         }).then(
                             function (resp) {
@@ -89,6 +87,10 @@ angular.module('posterModule').directive('posterTool', [
 
                                 $timeout(function () {
                                     scope.subscription.foundEvents = data;
+
+                                    if (scope.subscription.foundEvents.length > 0) {
+                                        scope.slide.options.data = scope.subscription.foundEvents[0].occurrence;
+                                    }
                                 });
 
                                 scope.loadingSearchResults = false;
@@ -172,6 +174,11 @@ angular.module('posterModule').directive('posterTool', [
                     scope.typeSelect = 'searchName';
                     scope.searchName = '';
                     scope.searchUrl = '';
+                    scope.displayOverrides = false;
+
+                    if (!scope.slide.options.overrides) {
+                        scope.slide.options.overrides = {};
+                    }
 
                     scope.pagerBack = function () {
                         scope.pager.centerItem = Math.max(scope.pager.centerItem - 10, 1);

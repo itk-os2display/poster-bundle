@@ -75,14 +75,14 @@ class PosterController extends Controller
     }
 
     /**
-     * Search for occurences.
+     * Search for events.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      * @throws \Exception
      */
-    public function searchOccurrencesAction(Request $request)
+    public function searchEventsAction(Request $request)
     {
         $query = $request->query->all();
 
@@ -91,7 +91,7 @@ class PosterController extends Controller
         }
 
         return new JsonResponse(
-            $this->get('os2display.poster.service')->searchOccurrences($query)
+            $this->get('os2display.poster.service')->searchEvents($query)
         );
     }
 }

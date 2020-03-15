@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use Os2Display\CoreBundle\Events\CronEvent;
 use Os2Display\PosterBundle\Events\GetEvents;
 use Os2Display\PosterBundle\Events\GetEvent;
-use Os2Display\PosterBundle\Events\GetOccurrence;
+use Os2Display\PosterBundle\Events\SearchEvents;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Os2Display\CoreBundle\Entity\Slide;
@@ -60,7 +60,7 @@ class PosterService
     }
 
     /**
-     *
+     * Update the slides.
      */
     public function updatePosterSlides()
     {
@@ -174,7 +174,7 @@ class PosterService
      */
     public function getOccurrence($occurrenceId)
     {
-        $event = new GetOccurrence($occurrenceId);
+        $event = new SearchEvents($occurrenceId);
         $this->dispatcher->dispatch(
             $event::EVENT,
             $event
@@ -370,90 +370,27 @@ class PosterService
     }
 
     /**
+     * Search for events by query.
      *
+     * query: {
+     *   places: [Array_of_IDs],
+     *   organizers: [Array_of_IDs],
+     *   tags: [Array_of_Names]
+     * }
      *
      * @param array $query
      *
-     * @return array|mixed|\Psr\Http\Message\ResponseInterface
+     * @return array
      * @throws \Exception
      */
-    public function searchOccurrences(array $query)
+    public function searchEvents(array $query)
     {
-        $params = [
-            'timeout' => 2,
-            'query' => [
-                'items_per_page' => 5,
-                'order' => [
-                    'startDate' => 'asc'
-                ],
-                'startDate' => [
-                    'after' => (new \DateTime())->format('c')
-                ]
-            ]
-        ];
-
-        if (isset($query['organizers'])) {
-            $params['query']['organizer.id'] = $query['organizers'];
-        }
-        if (isset($query['places'])) {
-            $params['query']['occurrences.place.id'] = $query['places'];
-        }
-        if (isset($query['tags'])) {
-            $params['query']['tags'] = $query['tags'];
-        }
-
-        $client = new Client();
-        $requestResult = $client->request(
-            'GET',
-            'https://api.detskeriaarhus.dk/api/events',
-            $params
+        $event = new SearchEvents($query);
+        $this->dispatcher->dispatch(
+            $event::EVENT,
+            $event
         );
 
-        $body = json_decode($requestResult->getBody()->getContents());
-
-        $res = [
-            'results' => $body->{'hydra:member'} ?? [],
-            "pagination" => [
-                "more" => isset($body->{'hydra:view'}->{'hydra:next'}),
-            ],
-        ];
-
-        $res['results'] = array_reduce(
-            $res['results'],
-            function ($carry, $el) {
-                $split = explode('/', $el->{'@id'});
-                $id = end($split);
-
-                $text = $el->name ?? null;
-
-                $image = $el->image ?? null;
-                $imageSmall = $el->images->small ?? null;
-
-                $startDate = $el->occurrences[0]->startDate ?? null;
-                $endDate = $el->occurrences[0]->endDate ?? null;
-
-                $place = $el->occurrences[0]->place->name ?? null;
-
-                $organizer = $el->organizer->name ?? null;
-
-                $newObject = (object)[
-                    'id' => $id,
-                    'text' => $text,
-                    'image' => $image,
-                    'imageSmall' => $imageSmall,
-                    'startDate' => $startDate,
-                    'endDate' => $endDate,
-                    'place' => $place,
-                    'organizer' => $organizer,
-                ];
-
-                $carry[] = $newObject;
-
-                return $carry;
-            },
-            []
-        );
-
-        return $res;
+        return $event->getResults();
     }
 }
