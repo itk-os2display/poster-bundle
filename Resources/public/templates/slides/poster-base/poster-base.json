@@ -29,10 +29,6 @@
       "id": "poster-tool"
     },
     {
-      "name": "Overskrivninger",
-      "id": "poster-edit-texts-tool"
-    },
-    {
       "name": "Logo",
       "id": "logo-editor",
       "template": "bundles/os2displaydefaulttemplate/apps/toolsModule/fixed-logo-editor.html"

@@ -2,14 +2,17 @@
 
 namespace Os2Display\PosterBundle\Service;
 
+use GuzzleHttp\Client;
 use Os2Display\CoreBundle\Events\CronEvent;
 use Os2Display\PosterBundle\Events\GetEvents;
 use Os2Display\PosterBundle\Events\GetEvent;
-use Os2Display\PosterBundle\Events\GetOccurrence;
+use Os2Display\PosterBundle\Events\SearchByType;
+use Os2Display\PosterBundle\Events\SearchEvents;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Os2Display\CoreBundle\Entity\Slide;
 use Doctrine\Common\Cache\CacheProvider;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class PosterService
 {
@@ -58,7 +61,7 @@ class PosterService
     }
 
     /**
-     *
+     * Update the slides.
      */
     public function updatePosterSlides()
     {
@@ -94,8 +97,7 @@ class PosterService
 
                     if (count($updatedEvent['occurrences']) > 0) {
                         // Find closest occurrence to current, and replace with this.
-                        foreach($updatedEvent['occurrences'] as $occurrence)
-                        {
+                        foreach ($updatedEvent['occurrences'] as $occurrence) {
                             $interval[] = abs($oldStartDate - strtotime($occurrence->startDate));
                         }
                         asort($interval);
@@ -111,8 +113,7 @@ class PosterService
                 if (isset($updatedOccurrence)) {
                     $options['data'] = $updatedOccurrence;
                     $cache[$cacheKey] = $updatedOccurrence;
-                }
-                else {
+                } else {
                     // If the occurrence does not exist, unpublish the slide,
                     // and stop updating the data.
                     $options['do_not_update'] = true;
@@ -130,6 +131,7 @@ class PosterService
      * Get events from providers.
      *
      * @param $query
+     *
      * @return mixed
      */
     public function getEvents($query)
@@ -150,6 +152,7 @@ class PosterService
      * Get event from providers.
      *
      * @param $id
+     *
      * @return mixed
      */
     public function getEvent($id)
@@ -167,11 +170,12 @@ class PosterService
      * Get occurrence from providers.
      *
      * @param $occurrenceId
+     *
      * @return mixed
      */
     public function getOccurrence($occurrenceId)
     {
-        $event = new GetOccurrence($occurrenceId);
+        $event = new SearchEvents($occurrenceId);
         $this->dispatcher->dispatch(
             $event::EVENT,
             $event
@@ -182,5 +186,48 @@ class PosterService
         }
 
         return $event->getOccurrence();
+    }
+
+    /**
+     * Search by type.
+     *
+     * @param $type
+     * @param array $query
+     *
+     * @return array
+     */
+    public function search($type, $query = [])
+    {
+        $event = new SearchByType($type, $query);
+        $this->dispatcher->dispatch(
+            $event::EVENT,
+            $event
+        );
+
+        return $event->getResults();
+    }
+
+    /**
+     * Search for events by query.
+     *
+     * query: {
+     *   places: [Array_of_IDs],
+     *   organizers: [Array_of_IDs],
+     *   tags: [Array_of_Names]
+     * }
+     *
+     * @param array $query
+     *
+     * @return array
+     */
+    public function searchEvents(array $query)
+    {
+        $event = new SearchEvents($query);
+        $this->dispatcher->dispatch(
+            $event::EVENT,
+            $event
+        );
+
+        return $event->getResults();
     }
 }

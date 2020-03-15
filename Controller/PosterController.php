@@ -2,7 +2,6 @@
 
 namespace Os2Display\PosterBundle\Controller;
 
-use GuzzleHttp\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,63 +51,47 @@ class PosterController extends Controller
         return new JsonResponse($this->get('os2display.poster.service')->getOccurrence($occurrenceId));
     }
 
-    public function optionsAction(Request $request)
+    /**
+     * Search for type.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function searchAction(Request $request)
     {
-        $search = $request->query->get('search');
+        $query = $request->query->all();
+        $type = $query['type'];
 
-        return new JsonResponse(
-            [
-                'places' => $this->getContent('places', $search),
-                'organizers' => $this->getContent('organizers', $search),
-                'tags' => array_reduce($this->getContent('tags', ''), function ($carry, $el) use ($search) {
-                    if (strpos(strtolower($el->name), strtolower($search)) !== false) {
-                        $carry[] = $el;
-                    }
-                    return $carry;
-                }, []),
-            ]
-        );
-    }
-
-    private function getContent(string $type, $search)
-    {
-        $client = new Client();
-
-        $result = [];
-
-        $res = $client->request(
-            'GET',
-            'https://api.detskeriaarhus.dk/api/'.$type,
-            [
-                'query' => [
-                    'name' => $search,
-                ],
-                'timeout' => 2,
-            ]
-        );
-
-        $res = json_decode($res->getBody()->getContents());
-
-        $result = array_merge($result, $res->{'hydra:member'} ?? []);
-
-        $con = $res->{'hydra:view'}->{'hydra:next'} ?? false;
-        while ($con) {
-            $res = $client->request(
-                'GET',
-                'https://api.detskeriaarhus.dk'.$res->{'hydra:view'}->{'hydra:next'},
-                [
-                    'timeout' => 2,
-                ]
-            );
-
-            $res = json_decode($res->getBody()->getContents());
-
-            $result = array_merge($result, $res->{'hydra:member'});
-
-            $con = $res->{'hydra:view'}->{'hydra:next'} ?? false;
+        if (empty($query) || empty($type)) {
+            return new JsonResponse([]);
         }
 
-        return $result;
+        unset($query['type']);
+
+        return new JsonResponse(
+            $this->get('os2display.poster.service')->search($type, $query)
+        );
     }
 
+    /**
+     * Search for events.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws \Exception
+     */
+    public function searchEventsAction(Request $request)
+    {
+        $query = $request->query->all();
+
+        if (empty($query)) {
+            return new JsonResponse([]);
+        }
+
+        return new JsonResponse(
+            $this->get('os2display.poster.service')->searchEvents($query)
+        );
+    }
 }

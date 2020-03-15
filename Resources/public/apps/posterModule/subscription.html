@@ -1,12 +1,40 @@
 <div>
   <h1>Abonnementsplakat</h1>
 
-  <form data-ng-submit="submitSearch(searchText)">
-    <input class="form-control" ng-model="searchText" type="text">
-  </form>
+  <div class="spinner" ng-if="loading"></div>
 
-  <div ng-repeat="option in selectOptions">
-    <label><strong>{{option.text}}</strong></label>
-    <div ng-repeat="subOption in option.subOptions" ng-click="selectSubOption(subOption)">{{subOption.text}}</div>
+  <div ng-show="!loading">
+    <h2>Places</h2>
+    <select id="os2display-poster--select-subscription-places" multiple="" style="width: 100%"></select>
   </div>
+  <div ng-show="!loading">
+    <h2>Organizers</h2>
+    <select id="os2display-poster--select-subscription-organizers" multiple="" style="width: 100%"></select>
+  </div>
+  <div ng-show="!loading">
+    <h2>Tags</h2>
+    <select id="os2display-poster--select-subscription-tags" multiple="" style="width: 100%"></select>
+  </div>
+
+  <table class="table table-hover text-left">
+    <thead>
+    <tr>
+      <th scope="col">Billede</th>
+      <th scope="col">Begivenhed</th>
+      <th scope="col">Sted</th>
+      <th scope="col">Dato</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="result in subscription.foundEvents" ng-if="!loadingSearchResults">
+      <td><img ng-src="{{ result.imageSmall }}" alt="{{ result.text }}" style="max-width: 80px;" ng-if="result.imageSmall"></td>
+      <td><strong>{{ result.text }}</strong><br>{{ result.organizer }}</td>
+      <td>{{ result.place }}</td>
+      <td>{{ result.startDate | date }} - {{ result.endDate | date }}</td>
+    </tr>
+    <tr ng-if="loadingSearchResults">
+      <td colspan="4"><div class="spinner"></div></td>
+    </tr>
+    </tbody>
+  </table>
 </div>
