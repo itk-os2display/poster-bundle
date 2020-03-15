@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Os2Display\PosterBundle\Events\GetEvents;
 use Os2Display\PosterBundle\Events\GetEvent;
 use Os2Display\PosterBundle\Events\GetOccurrence;
+use Os2Display\PosterBundle\Events\SearchByType;
 use Os2Display\PosterBundle\Events\SearchEvents;
 
 /**
@@ -40,6 +41,7 @@ class EventdatabasenIntegration
             GetEvent::EVENT => 'getEvent',
             GetOccurrence::EVENT => 'getOccurrence',
             SearchEvents::EVENT => 'searchEvents',
+            SearchByType::EVENT => 'searchByType',
         ];
     }
 
@@ -233,7 +235,7 @@ class EventdatabasenIntegration
         $client = new Client();
         $requestResult = $client->request(
             'GET',
-            'https://api.detskeriaarhus.dk/api/events',
+            $this->url . '/api/events',
             $params
         );
 
@@ -315,5 +317,189 @@ class EventdatabasenIntegration
         );
 
         $event->setResults($res);
+    }
+
+    /**
+     * Search by type.
+     *
+     * @param \Os2Display\PosterBundle\Events\SearchByType $event
+     *
+     * @return array|mixed|\Psr\Http\Message\ResponseInterface
+     */
+    public function searchByType(SearchByType $event)
+    {
+        $type = $event->getType();
+        $query = $event->getQuery();
+
+        // Special case for Eventdatabase, since you can not search in tags.
+        if ($type === 'tags') {
+            $tags = $this->getTags();
+
+            $search = $query['name'];
+
+            $filteredTags = array_reduce(
+                $tags,
+                function ($carry, $tag) use ($search) {
+                    if (strpos(strtolower($tag->name), $search) !== false) {
+                        $carry[] = (object)[
+                            'id' => $tag->id,
+                            'text' => $tag->name,
+                        ];
+                    }
+
+                    return $carry;
+                },
+                []
+            );
+
+            return [
+                'results' => $filteredTags,
+                'pagination' => [
+                    'more' => false,
+                ],
+            ];
+        }
+
+        $client = new Client();
+
+        $params = ['timeout' => 2, 'query' => []];
+
+        if ($query !== null) {
+            $params['query'] = $query;
+        }
+
+        $res = $client->request(
+            'GET',
+            $this->url . '/api/'.$type,
+            $params
+        );
+
+        $res = json_decode($res->getBody()->getContents());
+
+        $res = [
+            'results' => $res->{'hydra:member'} ?? [],
+            "pagination" => [
+                "more" => isset($res->{'hydra:view'}->{'hydra:next'}),
+            ],
+        ];
+
+        $res['results'] = array_reduce(
+            $res['results'],
+            function ($carry, $el) use ($type) {
+                $id = $el->id ?? null;
+
+                if ($id === null) {
+                    $split = explode('/', $el->{'@id'});
+                    $id = end($split);
+                }
+
+                $text = $el->name ?? null;
+
+                $newObject = (object)[
+                    'id' => $id,
+                    'text' => $text,
+                ];
+
+                $carry[] = $newObject;
+
+                return $carry;
+            },
+            []
+        );
+
+        $event->setResults($res);
+    }
+
+    /**
+     * Get searchable tags.
+     *
+     * @param bool $clearCache
+     *
+     * @return array|false|mixed
+     */
+    private function getTags(bool $clearCache = false)
+    {
+        $cacheKey = 'poster.tags';
+
+        if (!$clearCache) {
+            if ($this->cache->contains($cacheKey)) {
+                return $this->cache->fetch($cacheKey);
+            }
+        }
+
+        $res = $this->getContent('tags');
+
+        $tags = array_reduce(
+            $res,
+            function ($carry, $tag) {
+                $split = explode('/', $tag->{'@id'});
+                $id = end($split);
+
+                $carry[] = (object)[
+                    'id' => $id,
+                    'name' => $tag->name,
+                ];
+
+                return $carry;
+            },
+            []
+        );
+
+        // Cache for 24 hours.
+        $this->cache->save($cacheKey, $tags, 60 * 60 * 24);
+
+        return $tags;
+    }
+
+    /**
+     * Get content from Eventdatabase.
+     *
+     * @TODO: Change this to the event structure.
+     *
+     * @param string $type
+     * @param null $search
+     *
+     * @return array
+     */
+    private function getContent(string $type, $search = null)
+    {
+        $client = new Client();
+
+        $result = [];
+
+        $params = ['timeout' => 2];
+
+        if ($search !== null) {
+            $params['query'] = [
+                'name' => $search,
+            ];
+        }
+
+        $res = $client->request(
+            'GET',
+            $this->url . '/api/'.$type,
+            $params
+        );
+
+        $res = json_decode($res->getBody()->getContents());
+
+        $result = array_merge($result, $res->{'hydra:member'} ?? []);
+
+        $con = $res->{'hydra:view'}->{'hydra:next'} ?? false;
+        while ($con) {
+            $res = $client->request(
+                'GET',
+                $this->url.$res->{'hydra:view'}->{'hydra:next'},
+                ['timeout' => 2]
+            );
+
+            $res = json_decode($res->getBody()->getContents());
+
+            $result = array_merge($result, $res->{'hydra:member'});
+
+            $con = $res->{'hydra:view'}->{'hydra:next'} ?? false;
+        }
+
+        return $result;
     }
 }

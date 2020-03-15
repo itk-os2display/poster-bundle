@@ -5,32 +5,30 @@ namespace Os2Display\PosterBundle\Events;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Class SearchEvents
+ * Class SearchByType
  * @package Os2Display\PosterBundle\Events
  */
-class SearchEvents extends Event
+class SearchByType extends Event
 {
-    const EVENT = 'os2display.poster.search_events';
+    const EVENT = 'os2display.poster.search_by_type';
 
-    /*
-     * query: {
-     *   places: [Array_of_IDs],
-     *   organizers: [Array_of_IDs],
-     *   tags: [Array_of_Names]
-     * }
-     */
+    /* @var string $type */
+    protected $type;
     /* @var array $query */
     protected $query;
     /* @var array $results */
     protected $results;
 
     /**
-     * SearchEvents constructor.
+     * SearchByType constructor.
+     *
+     * @param string $type
      * @param array $query
      */
-    public function __construct(array $query)
+    public function __construct(string $type, array $query)
     {
         $this->query = $query;
+        $this->type = $type;
     }
 
     /**
@@ -63,5 +61,21 @@ class SearchEvents extends Event
     public function setResults(array $results): void
     {
         $this->results = $results;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string $type
+     */
+    public function setType(string $type): void
+    {
+        $this->type = $type;
     }
 }

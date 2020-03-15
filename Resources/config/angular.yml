@@ -13,7 +13,6 @@ modules:
             - bundles/os2displayposter/assets/select2.min.js
             - bundles/os2displayposter/apps/posterModule/module.js
             - bundles/os2displayposter/apps/posterModule/posterTool.js
-            - bundles/os2displayposter/apps/posterModule/posterEditTextsTool.js
 
 apps:
     # Inject into administration app to enable access to tool from admin.

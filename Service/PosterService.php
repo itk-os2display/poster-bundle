@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Os2Display\CoreBundle\Events\CronEvent;
 use Os2Display\PosterBundle\Events\GetEvents;
 use Os2Display\PosterBundle\Events\GetEvent;
+use Os2Display\PosterBundle\Events\SearchByType;
 use Os2Display\PosterBundle\Events\SearchEvents;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -188,185 +189,22 @@ class PosterService
     }
 
     /**
-     * Get searchable tags.
-     *
-     * @param bool $clearCache
-     *
-     * @return array|false|mixed
-     */
-    public function getTags(bool $clearCache = false)
-    {
-        $cacheKey = 'poster.tags';
-
-        if (!$clearCache) {
-            if ($this->cache->contains($cacheKey)) {
-                return $this->cache->fetch($cacheKey);
-            }
-        }
-
-        $res = $this->getContent('tags');
-
-        $tags = array_reduce(
-            $res,
-            function ($carry, $tag) {
-                $split = explode('/', $tag->{'@id'});
-                $id = end($split);
-
-                $carry[] = (object)[
-                    'id' => $id,
-                    'name' => $tag->name,
-                ];
-
-                return $carry;
-            },
-            []
-        );
-
-        // Cache for 1 hour.
-        $this->cache->save($cacheKey, $tags, 60 * 60);
-
-        return $tags;
-    }
-
-    /**
      * Search by type.
      *
      * @param $type
-     * @param null $query
-     *
-     * @return array|mixed|\Psr\Http\Message\ResponseInterface
-     */
-    public function search($type, $query = [])
-    {
-        // Special case for Eventdatabase, since you can not search in tags.
-        if ($type === 'tags') {
-            $tags = $this->getTags();
-
-            $search = $query['name'];
-
-            $filteredTags = array_reduce(
-                $tags,
-                function ($carry, $tag) use ($search) {
-                    if (strpos(strtolower($tag->name), $search) !== false) {
-                        $carry[] = (object)[
-                            'id' => $tag->id,
-                            'text' => $tag->name,
-                        ];
-                    }
-
-                    return $carry;
-                },
-                []
-            );
-
-            return [
-                'results' => $filteredTags,
-                'pagination' => [
-                    'more' => false,
-                ],
-            ];
-        }
-
-        $client = new Client();
-
-        $params = ['timeout' => 2, 'query' => []];
-
-        if ($query !== null) {
-            $params['query'] = $query;
-        }
-
-        $res = $client->request(
-            'GET',
-            'https://api.detskeriaarhus.dk/api/'.$type,
-            $params
-        );
-
-        $res = json_decode($res->getBody()->getContents());
-
-        $res = [
-            'results' => $res->{'hydra:member'} ?? [],
-            "pagination" => [
-                "more" => isset($res->{'hydra:view'}->{'hydra:next'}),
-            ],
-        ];
-
-        $res['results'] = array_reduce(
-            $res['results'],
-            function ($carry, $el) use ($type) {
-                $id = $el->id ?? null;
-
-                if ($id === null) {
-                    $split = explode('/', $el->{'@id'});
-                    $id = end($split);
-                }
-
-                $text = $el->name ?? null;
-
-                $newObject = (object)[
-                    'id' => $id,
-                    'text' => $text,
-                ];
-
-                $carry[] = $newObject;
-
-                return $carry;
-            },
-            []
-        );
-
-        return $res;
-    }
-
-    /**
-     * Get content from Eventdatabase.
-     *
-     * @TODO: Change this to the event structure.
-     *
-     * @param string $type
-     * @param null $search
+     * @param array $query
      *
      * @return array
      */
-    private function getContent(string $type, $search = null)
+    public function search($type, $query = [])
     {
-        $client = new Client();
-
-        $result = [];
-
-        $params = ['timeout' => 2];
-
-        if ($search !== null) {
-            $params['query'] = [
-                'name' => $search,
-            ];
-        }
-
-        $res = $client->request(
-            'GET',
-            'https://api.detskeriaarhus.dk/api/'.$type,
-            $params
+        $event = new SearchByType($type, $query);
+        $this->dispatcher->dispatch(
+            $event::EVENT,
+            $event
         );
 
-        $res = json_decode($res->getBody()->getContents());
-
-        $result = array_merge($result, $res->{'hydra:member'} ?? []);
-
-        $con = $res->{'hydra:view'}->{'hydra:next'} ?? false;
-        while ($con) {
-            $res = $client->request(
-                'GET',
-                'https://api.detskeriaarhus.dk'.$res->{'hydra:view'}->{'hydra:next'},
-                ['timeout' => 2]
-            );
-
-            $res = json_decode($res->getBody()->getContents());
-
-            $result = array_merge($result, $res->{'hydra:member'});
-
-            $con = $res->{'hydra:view'}->{'hydra:next'} ?? false;
-        }
-
-        return $result;
+        return $event->getResults();
     }
 
     /**
@@ -381,7 +219,6 @@ class PosterService
      * @param array $query
      *
      * @return array
-     * @throws \Exception
      */
     public function searchEvents(array $query)
     {
