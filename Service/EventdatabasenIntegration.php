@@ -254,7 +254,7 @@ class EventdatabasenIntegration
 
                 $text = $el->name ?? null;
 
-                $image = $el->images->large && $el->image ?? null;
+                $image = $el->images->large ?? $el->image ?? null;
                 $imageSmall = $el->images->small ?? null;
 
                 $startDate = $el->occurrences[0]->startDate ?? null;
