@@ -163,7 +163,6 @@ class EventdatabasenIntegration
                 'occurrenceId' => $results->{'@id'},
                 'ticketPurchaseUrl' => $results->event->{'ticketPurchaseUrl'},
                 'excerpt' =>  $results->event->{'excerpt'},
-                'description' =>  strip_tags($results->event->{'description'}),
                 'name' =>  $results->event->{'name'},
                 'url' =>  $results->event->{'url'},
                 'baseUrl' => $baseUrl,
@@ -180,7 +179,6 @@ class EventdatabasenIntegration
                     'streetAddress' => $results->place->streetAddress,
                     'addressLocality' => $results->place->addressLocality,
                     'postalCode' => $results->place->postalCode,
-                    'description' => strip_tags($results->place->description),
                     'image' => $results->place->image,
                     'telephone' => $results->place->telephone,
                 ];
@@ -210,13 +208,13 @@ class EventdatabasenIntegration
         $query = $event->getQuery();
 
         $params = [
-            'timeout' => 2,
+            'timeout' => 3,
             'query' => [
                 'items_per_page' => 5,
                 'order' => [
-                    'startDate' => 'asc'
+                    'occurrences.startDate' => 'asc'
                 ],
-                'startDate' => [
+                'occurrences.startDate' => [
                     'after' => (new \DateTime())->format('c')
                 ]
             ]
@@ -256,7 +254,7 @@ class EventdatabasenIntegration
 
                 $text = $el->name ?? null;
 
-                $image = $el->image ?? null;
+                $image = $el->images->large && $el->image ?? null;
                 $imageSmall = $el->images->small ?? null;
 
                 $startDate = $el->occurrences[0]->startDate ?? null;
@@ -269,6 +267,7 @@ class EventdatabasenIntegration
                 $newObject = (object)[
                     'id' => $id,
                     'text' => $text,
+                    'name' => $text,
                     'image' => $image,
                     'imageSmall' => $imageSmall,
                     'startDate' => $startDate,
@@ -285,7 +284,6 @@ class EventdatabasenIntegration
                         'occurrenceId' => $firstOccurrence->{'@id'},
                         'ticketPurchaseUrl' => $el->{'ticketPurchaseUrl'},
                         'excerpt' =>  $el->{'excerpt'},
-                        'description' =>  strip_tags($el->{'description'}),
                         'name' =>  $el->{'name'},
                         'url' =>  $el->{'url'},
                         'image' =>  $image,
@@ -301,7 +299,6 @@ class EventdatabasenIntegration
                             'streetAddress' => $el->place->streetAddress,
                             'addressLocality' => $el->place->addressLocality,
                             'postalCode' => $el->place->postalCode,
-                            'description' => strip_tags($el->place->description),
                             'image' => $el->place->image,
                             'telephone' => $el->place->telephone,
                         ];
