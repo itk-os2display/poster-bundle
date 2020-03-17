@@ -2,6 +2,7 @@
 
 namespace Os2Display\PosterBundle\Service;
 
+use Doctrine\Common\Cache\CacheProvider;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Os2Display\PosterBundle\Events\GetEvents;
@@ -19,14 +20,20 @@ class EventdatabasenIntegration
 
     private $enabled;
     private $url;
+    private $cache;
 
     /**
      * EventdatabasenIntegration constructor.
+     *
+     * @param $enabled
+     * @param $url
+     * @param \Doctrine\Common\Cache\CacheProvider $cache
      */
-    public function __construct($enabled, $url)
+    public function __construct($enabled, $url, CacheProvider $cache)
     {
         $this->enabled = $enabled;
         $this->url = $url;
+        $this->cache = $cache;
     }
 
     /**
@@ -219,6 +226,10 @@ class EventdatabasenIntegration
                 ]
             ]
         ];
+
+        if (isset($query['numberOfResults'])) {
+            $params['query']['items_per_page'] = $query['numberOfResults'];
+        }
 
         if (isset($query['organizers'])) {
             $params['query']['organizer.id'] = $query['organizers'];

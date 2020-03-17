@@ -55,7 +55,8 @@ angular.module('posterModule').directive('posterTool', [
                         var search = {
                             tags: [],
                             places: [],
-                            organizers: []
+                            organizers: [],
+                            numberOfResults: selections.selectedNumber
                         };
 
                         for (var tag in selections.selectedTags) {
@@ -145,11 +146,15 @@ angular.module('posterModule').directive('posterTool', [
                     scope.loading = true;
                     scope.subscription = {};
 
+                    scope.numberItems = [1,2,3,4,5,6,7,8,9,10];
+
+                    // Default selections.
                     if (!scope.slide.options.subscription) {
                         scope.slide.options.subscription = {
                             selectedPlaces: {},
                             selectedOrganizers: {},
                             selectedTags: {},
+                            selectedNumber: 5,
                         }
                     }
 
@@ -158,6 +163,8 @@ angular.module('posterModule').directive('posterTool', [
                         setupFilter('places', scope.slide.options.subscription.selectedPlaces);
                         setupFilter('organizers', scope.slide.options.subscription.selectedOrganizers);
                         setupFilter('tags', scope.slide.options.subscription.selectedTags);
+
+                        $('#os2display-poster--select-number').on('change', getSubscriptionResults);
 
                         scope.loading = false;
                     }, 1000);
@@ -182,7 +189,7 @@ angular.module('posterModule').directive('posterTool', [
 
                     scope.toggleOverrides = function () {
                         scope.displayOverrides = !scope.displayOverrides;
-                    }
+                    };
 
                     scope.pagerBack = function () {
                         scope.pager.centerItem = Math.max(scope.pager.centerItem - 10, 1);

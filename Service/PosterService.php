@@ -104,6 +104,9 @@ class PosterService
                             return $carry;
                         }, []);
                     }
+                    if (isset($subscription['selectedNumber'])) {
+                        $query['numberOfResults'] = $subscription['selectedNumber'];
+                    }
 
                     $results = $this->searchEvents($query);
 
