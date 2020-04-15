@@ -10,18 +10,22 @@
     <div class="bootstrap container edit-menu--background-page">
       <div class="edit-menu--background-page-inner" style="padding-top: 1em; width: 100%;">
         <div class="row" ng-if="!slide.options.type">
-          <div class="col">
-            <h1 class="mt-2 text-left">Vælg type</h1>
-
-            <div>
-              <button ng-click="selectType('single')">Enkelt</button>
-              <button ng-click="selectType('subscription')">Abonnér</button>
-            </div>
-
-            <div class="bg-info">
-              Dette valg kan ikke gøres om efter slidet er oprettet.<br>
-              "Enkelt" opretter en enkelt plakat ud fra ét arrangement.<br>
-              "Abonnér" opretter et slide der viser de X nyeste arrangementer ud fra valgt lokation, tags eller sted.
+          <div class="col text-left">
+            <h1 class="text-left my-3">Vælg type</h1>
+            <div class="row">
+              <div class="col-12">
+                  <div class="alert alert-info">
+                  <strong>Bemærk!</strong> Dette valg kan ikke ændres efter slidet er oprettet.
+                </div>
+              </div>
+              <div class="col-md-6">
+                <button class="btn btn-primary btn-block mb-1" ng-click="selectType('single')">Enkelt</button>
+                <p><i class="fa fa-info-circle mr-1 d-inline"></i>"Enkelt" opretter en enkelt plakat ud fra ét arrangement.</p>
+              </div>
+              <div class="col-md-6">
+                <button class="btn btn-primary btn-block mb-1" ng-click="selectType('subscription')">Abonnér</button>
+                <p><i class="fa fa-info-circle mr-1 d-inline"></i>"Abonnér" opretter et slide der viser de X nyeste arrangementer ud fra valgt lokation, tags eller sted.</p>
+              </div>
             </div>
           </div>
         </div>
