@@ -6,8 +6,9 @@ assets:
         - bundles/os2displayposter/assets/select2.min.css
     js:
         - bundles/os2displayposter/assets/select2.min.js
-    js_prod:
+    js_prod_assets:
         - bundles/os2displayposter/assets/select2.min.js
+    js_prod:
         - bundles/os2displayposter/assets/build/os2displayposter.min.js
 
 modules:
