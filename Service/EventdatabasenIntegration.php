@@ -331,8 +331,6 @@ class EventdatabasenIntegration
      * Search by type.
      *
      * @param \Os2Display\PosterBundle\Events\SearchByType $event
-     *
-     * @return array|mixed|\Psr\Http\Message\ResponseInterface
      */
     public function searchByType(SearchByType $event)
     {
@@ -348,24 +346,25 @@ class EventdatabasenIntegration
             $filteredTags = array_reduce(
                 $tags,
                 function ($carry, $tag) use ($search) {
-                    if (strpos(strtolower($tag->name), $search) !== false) {
+                    if (strpos(strtolower($tag->name), strtolower($search)) !== false) {
                         $carry[] = (object)[
                             'id' => $tag->id,
                             'text' => $tag->name,
                         ];
                     }
-
                     return $carry;
                 },
                 []
             );
 
-            return [
+            $event->setResults([
                 'results' => $filteredTags,
                 'pagination' => [
                     'more' => false,
                 ],
-            ];
+            ]);
+
+            return;
         }
 
         $client = new Client();
@@ -382,17 +381,18 @@ class EventdatabasenIntegration
             $params
         );
 
-        $res = json_decode($res->getBody()->getContents());
+        $content = json_decode($res->getBody()->getContents());
+
+        $results = $content->{'hydra:member'} ?? [];
 
         $res = [
-            'results' => $res->{'hydra:member'} ?? [],
-            "pagination" => [
-                "more" => isset($res->{'hydra:view'}->{'hydra:next'}),
+            'pagination' => [
+                'more' => isset($content->{'hydra:view'}->{'hydra:next'}),
             ],
         ];
 
         $res['results'] = array_reduce(
-            $res['results'],
+            $results,
             function ($carry, $el) use ($type) {
                 $id = $el->id ?? null;
 
@@ -461,8 +461,6 @@ class EventdatabasenIntegration
 
     /**
      * Get content from Eventdatabase.
-     *
-     * @TODO: Change this to the event structure.
      *
      * @param string $type
      * @param null $search

@@ -83,13 +83,12 @@
   <div ng-if="!displayOverrides">
     <div class="row">
       <div class="col-12">
-        <form id="searchForm" ng-submit="search()">
+        <form ng-submit="search(searchName, searchUrl, 0)">
           <div class="form-row">
             <div class="col-2">
               <div class="form-group">
                 <label class="sr-only" for="type-select">Vælg type</label>
-                <select class="form-control" id="type-select"
-                        ng-model="typeSelect">
+                <select class="form-control" id="type-select" ng-model="typeSelect">
                   <option selected value="searchName">Navn</option>
                   <option value="searchUrl">URL</option>
                 </select>
@@ -97,21 +96,16 @@
             </div>
             <div class="col-8">
               <div class="form-group" ng-show="typeSelect === 'searchName'">
-                <label for="form-name"
-                       class="sr-only">Søg efter begivenhed</label>
-                <input class="form-control" id="form-name" type="text"
-                       ng-model="searchName" placeholder="Begivenhedsnavn">
+                <label for="form-name" class="sr-only">Søg efter begivenhed</label>
+                <input class="form-control" id="form-name" type="text" ng-model="searchName" placeholder="Begivenhedsnavn">
               </div>
               <div class="form-group" ng-show="typeSelect === 'searchUrl'">
-                <label for="form-url"
-                       class="sr-only">Link til begivenhed</label>
-                <input class="form-control" id="form-url" type="text"
-                       ng-model="searchUrl" placeholder="Begivenhedens URL">
+                <label for="form-url" class="sr-only">Link til begivenhed</label>
+                <input class="form-control" id="form-url" type="text" ng-model="searchUrl" placeholder="Begivenhedens URL">
               </div>
             </div>
             <div class="col-2">
-              <input class="btn btn-primary btn-block" type="submit"
-                     value="Søg" ng-click="showSpinner = true">
+              <input class="btn btn-primary btn-block" type="submit" value="Søg">
             </div>
           </div>
         </form>
@@ -157,7 +151,7 @@
               </a>
             </li>
             <li class="page-item" ng-repeat="page in getPagerPages()" ng-class="{'active': pager.currentPage === page}" style="cursor: pointer">
-              <a class="page-link" ng-click="search(page)"> {{page}} </a>
+              <a class="page-link" ng-click="search(searchName, searchUrl, page)"> {{page}} </a>
             </li>
             <li class="page-item">
               <a class="page-link" ng-click="pagerForward()" aria-label="Frem" style="cursor: pointer">

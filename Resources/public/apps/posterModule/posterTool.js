@@ -2,6 +2,34 @@
  * Poster tool. Select between subscription or single.
  */
 angular.module('posterModule').directive('posterTool', [
+    function () {
+        'use strict';
+
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                slide: '=',
+                close: '&',
+                tool: '='
+            },
+            link: function (scope) {
+                /**
+                 * Select type of slide.
+                 *
+                 * @param type
+                 *   'single' or 'subscription'
+                 */
+                scope.selectType = function (type) {
+                    scope.slide.options.type = type;
+                };
+            },
+            templateUrl: '/bundles/os2displayposter/apps/posterModule/posterTool.html'
+        };
+    }
+]);
+
+angular.module('posterModule').directive('posterToolSingle', [
     '$timeout', '$http', function ($timeout, $http) {
         'use strict';
 
@@ -13,40 +41,149 @@ angular.module('posterModule').directive('posterTool', [
                 close: '&',
                 tool: '='
             },
-            link: function (scope, el) {
-                /**
-                 * Initialize tool depending on type.
-                 *
-                 * @param type
-                 */
-                function init(type) {
-                    if (type === 'subscription') {
-                        initSubscription();
-                    }
-                    else if (type === 'single') {
-                        initSingle();
-                    }
+            link: function (scope) {
+                scope.typeSelect = 'searchName';
+                scope.displayOverrides = false;
+
+                if (!scope.slide.options.overrides) {
+                    scope.slide.options.overrides = {};
                 }
 
-                if (!scope.slide.options.type) {
-                    /**
-                     * Select type of slide.
-                     *
-                     * @param type
-                     *   'single' or 'subscription'
-                     */
-                    scope.selectType = function (type) {
-                        scope.slide.options.type = type;
-                        init(type);
+                scope.toggleOverrides = function () {
+                    scope.displayOverrides = !scope.displayOverrides;
+                };
+
+                scope.pagerBack = function () {
+                    scope.pager.centerItem = Math.max(scope.pager.centerItem - 10, 1);
+                };
+
+                scope.pagerForward = function () {
+                    scope.pager.centerItem = Math.min(scope.pager.centerItem + 10, scope.pager.pagerMax);
+                };
+
+                scope.getPagerPages = function () {
+                    scope.pager.pages = [];
+
+                    var center10Page = parseInt(scope.pager.centerItem / 10);
+
+                    for (var i = 1; i <= 10; i++) {
+                        if (i + center10Page * 10 <= scope.pager.pagerMax) {
+                            scope.pager.pages.push(i + center10Page * 10);
+                        }
+                    }
+
+                    return scope.pager.pages;
+                };
+
+                scope.calculatePager = function (meta) {
+                    if (!meta) {
+                        return;
+                    }
+
+                    scope.pager = {
+                        pages: [],
+                        currentPage: meta.page,
+                        pagerMax: meta.number_of_pages,
+                        itemsPerPage: meta.items_per_page,
+                        totalResults: meta.total_results,
+                        centerItem: meta.page
                     };
-                } else {
-                    init(scope.slide.options.type);
-                }
+                };
 
-                ////////////////////
-                /// Subscription ///
-                ////////////////////
+                scope.search = function (searchName, searchUrl, page) {
+                    scope.showSpinner = true;
+                    scope.displayEvent = null;
+                    scope.events = null;
 
+                    var params = {};
+
+                    if (page) {
+                        params.page = page;
+                    }
+
+                    if (scope.typeSelect === 'searchName') {
+                        params.name = searchName;
+                    }
+                    else if (scope.typeSelect === 'searchUrl') {
+                        params.url = searchUrl;
+                    }
+
+                    $http.get('/api/os2display_poster/events', {
+                        params: params
+                    }).then(
+                        function success (response) {
+                            $timeout(function () {
+                                scope.events = response.data.events;
+                                scope.meta = response.data.meta;
+
+                                scope.calculatePager(scope.meta);
+                            });
+                        }
+                    );
+                };
+
+                scope.clickEvent = function (event) {
+                    scope.displayEvent = event;
+
+                    // If only one occurrence, select that.
+                    if (scope.displayEvent.occurrences.length === 1) {
+                        scope.clickOccurrence(scope.displayEvent.occurrences[0]);
+                    }
+                };
+
+                scope.refreshEvent = function () {
+                    $http.get('/api/os2display_poster/occurrence', {
+                        params: {
+                            occurrenceId: scope.slide.options.data.occurrenceId
+                        }
+                    }).then(
+                        function success (response) {
+                            $timeout(function () {
+                                scope.slide.options.data = response.data;
+                            });
+                        }
+                    );
+                };
+
+                scope.clickOccurrence = function (occurrence) {
+                    $http.get('/api/os2display_poster/occurrence', {
+                        params: {
+                            occurrenceId: occurrence['@id']
+                        }
+                    }).then(
+                        function success (response) {
+                            $timeout(function () {
+                                scope.slide.options.data = response.data;
+
+                                if (scope.slide.options.data.endDate) {
+                                    var endTimestamp = new Date(scope.slide.options.data.endDate).getTime();
+                                    scope.slide.schedule_to = parseInt(endTimestamp / 1000);
+                                }
+                            });
+                        }
+                    );
+
+                    scope.close();
+                };
+            },
+            templateUrl: '/bundles/os2displayposter/apps/posterModule/posterToolSingle.html'
+        };
+    }
+]);
+
+angular.module('posterModule').directive('posterToolSubscription', [
+    '$timeout', '$http', function ($timeout, $http) {
+        'use strict';
+
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                slide: '=',
+                close: '&',
+                tool: '='
+            },
+            link: function (scope) {
                 function getSubscriptionResults() {
                     scope.loadingSearchResults = true;
                     $timeout(function () {
@@ -142,169 +279,35 @@ angular.module('posterModule').directive('posterTool', [
                     }
                 }
 
-                function initSubscription() {
-                    scope.loading = true;
-                    scope.subscription = {};
+                scope.loading = true;
+                scope.subscription = {};
 
-                    scope.numberItems = [1,2,3,4,5,6,7,8,9,10];
+                scope.numberItems = [1,2,3,4,5,6,7,8,9,10];
 
-                    // Default selections.
-                    if (!scope.slide.options.subscription) {
-                        scope.slide.options.subscription = {
-                            selectedPlaces: {},
-                            selectedOrganizers: {},
-                            selectedTags: {},
-                            selectedNumber: 5,
-                        }
+                // Default selections.
+                if (!scope.slide.options.subscription) {
+                    scope.slide.options.subscription = {
+                        selectedPlaces: {},
+                        selectedOrganizers: {},
+                        selectedTags: {},
+                        selectedNumber: 5,
                     }
-
-                    // Hack: Delay to make sure the template has been loaded.
-                    $timeout(function () {
-                        setupFilter('places', scope.slide.options.subscription.selectedPlaces);
-                        setupFilter('organizers', scope.slide.options.subscription.selectedOrganizers);
-                        setupFilter('tags', scope.slide.options.subscription.selectedTags);
-
-                        $('#os2display-poster--select-number').on('change', getSubscriptionResults);
-
-                        scope.loading = false;
-                    }, 1000);
-
-                    getSubscriptionResults();
                 }
 
-                ////////////////////
-                /// Single       ///
-                ////////////////////
+                // Hack: Delay to make sure the template has been loaded.
+                $timeout(function () {
+                    setupFilter('places', scope.slide.options.subscription.selectedPlaces);
+                    setupFilter('organizers', scope.slide.options.subscription.selectedOrganizers);
+                    setupFilter('tags', scope.slide.options.subscription.selectedTags);
 
-                function initSingle() {
-                    // Search by name as default.
-                    scope.typeSelect = 'searchName';
-                    scope.searchName = '';
-                    scope.searchUrl = '';
-                    scope.displayOverrides = false;
+                    $('#os2display-poster--select-number').on('change', getSubscriptionResults);
 
-                    if (!scope.slide.options.overrides) {
-                        scope.slide.options.overrides = {};
-                    }
+                    scope.loading = false;
+                }, 1000);
 
-                    scope.toggleOverrides = function () {
-                        scope.displayOverrides = !scope.displayOverrides;
-                    };
-
-                    scope.pagerBack = function () {
-                        scope.pager.centerItem = Math.max(scope.pager.centerItem - 10, 1);
-                    };
-
-                    scope.pagerForward = function () {
-                        scope.pager.centerItem = Math.min(scope.pager.centerItem + 10, scope.pager.pagerMax);
-                    };
-
-                    scope.getPagerPages = function () {
-                        scope.pager.pages = [];
-
-                        var center10Page = parseInt(scope.pager.centerItem / 10);
-
-                        for (var i = 1; i <= 10; i++) {
-                            if (i + center10Page * 10 <= scope.pager.pagerMax) {
-                                scope.pager.pages.push(i + center10Page * 10);
-                            }
-                        }
-
-                        return scope.pager.pages;
-                    };
-
-                    scope.calculatePager = function (meta) {
-                        if (!meta) {
-                            return;
-                        }
-
-                        scope.pager = {
-                            pages: [],
-                            currentPage: meta.page,
-                            pagerMax: meta.number_of_pages,
-                            itemsPerPage: meta.items_per_page,
-                            totalResults: meta.total_results,
-                            centerItem: meta.page
-                        };
-                    };
-
-                    scope.search = function (page) {
-                        scope.displayEvent = null;
-                        scope.events = null;
-
-                        var params = {};
-
-                        if (page) {
-                            params.page = page;
-                        }
-
-                        if (scope.typeSelect === 'searchName') {
-                            params.name = scope.searchName;
-                        }
-                        else if (scope.typeSelect === 'searchUrl') {
-                            params.url = scope.searchUrl;
-                        }
-
-                        $http.get('/api/os2display_poster/events', {
-                            params: params
-                        }).then(
-                            function success (response) {
-                                $timeout(function () {
-                                    scope.events = response.data.events;
-                                    scope.meta = response.data.meta;
-
-                                    scope.calculatePager(scope.meta);
-                                });
-                            }
-                        );
-                    };
-
-                    scope.clickEvent = function (event) {
-                        scope.displayEvent = event;
-
-                        // If only one occurrence, select that.
-                        if (scope.displayEvent.occurrences.length === 1) {
-                            scope.clickOccurrence(scope.displayEvent.occurrences[0]);
-                        }
-                    };
-
-                    scope.refreshEvent = function () {
-                        $http.get('/api/os2display_poster/occurrence', {
-                            params: {
-                                occurrenceId: scope.slide.options.data.occurrenceId
-                            }
-                        }).then(
-                            function success (response) {
-                                $timeout(function () {
-                                    scope.slide.options.data = response.data;
-                                });
-                            }
-                        );
-                    };
-
-                    scope.clickOccurrence = function (occurrence) {
-                        $http.get('/api/os2display_poster/occurrence', {
-                            params: {
-                                occurrenceId: occurrence['@id']
-                            }
-                        }).then(
-                            function success (response) {
-                                $timeout(function () {
-                                    scope.slide.options.data = response.data;
-
-                                    if (scope.slide.options.data.endDate) {
-                                        var endTimestamp = new Date(scope.slide.options.data.endDate).getTime();
-                                        scope.slide.schedule_to = parseInt(endTimestamp / 1000);
-                                    }
-                                });
-                            }
-                        );
-
-                        scope.close();
-                    };
-                }
+                getSubscriptionResults();
             },
-            templateUrl: '/bundles/os2displayposter/apps/posterModule/posterTool.html'
+            templateUrl: '/bundles/os2displayposter/apps/posterModule/posterToolSubscription.html'
         };
     }
 ]);

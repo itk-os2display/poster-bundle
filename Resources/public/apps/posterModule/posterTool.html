@@ -30,13 +30,13 @@
           </div>
         </div>
         <div class="row" ng-if="slide.options.type === 'single'">
-          <div class="col" >
-            <div ng-include="'/bundles/os2displayposter/apps/posterModule/single.html'"></div>
+          <div class="col">
+            <poster-tool-single slide="slide" close="close" tool="tool"></poster-tool-single>
           </div>
         </div>
         <div class="row" ng-if="slide.options.type === 'subscription'">
           <div class="col">
-            <div ng-include="'/bundles/os2displayposter/apps/posterModule/subscription.html'"></div>
+            <poster-tool-subscription slide="slide" close="close" tool="tool"></poster-tool-subscription>
           </div>
         </div>
       </div>
