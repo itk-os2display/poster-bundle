@@ -83,7 +83,7 @@
   <div ng-if="!displayOverrides">
     <div class="row">
       <div class="col-12">
-        <form ng-submit="search(searchName, searchUrl, 0)">
+        <form ng-submit="search(typeSelect, searchName, searchUrl, searchOrganizer, searchOrganizer, searchPlace, 0)">
           <div class="form-row">
             <div class="col-2">
               <div class="form-group">
@@ -91,6 +91,9 @@
                 <select class="form-control" id="type-select" ng-model="typeSelect">
                   <option selected value="searchName">Navn</option>
                   <option value="searchUrl">URL</option>
+                  <option value="searchOrganizer">Arrangør</option>
+                  <option value="searchPlace">Sted</option>
+                  <option value="searchTag">Tag</option>
                 </select>
               </div>
             </div>
@@ -102,6 +105,18 @@
               <div class="form-group" ng-show="typeSelect === 'searchUrl'">
                 <label for="form-url" class="sr-only">Link til begivenhed</label>
                 <input class="form-control" id="form-url" type="text" ng-model="searchUrl" placeholder="Begivenhedens URL">
+              </div>
+              <div class="form-group" ng-show="typeSelect === 'searchOrganizer'">
+                <label for="os2display-poster--select-single-organizers" class="sr-only">Arrangør</label>
+                <select class="form-control" id="os2display-poster--select-single-organizers" ng-model="searchOrganizer" style="width: 100%"></select>
+              </div>
+              <div class="form-group" ng-show="typeSelect === 'searchPlace'">
+                <label for="os2display-poster--select-single-places" class="sr-only">Sted</label>
+                <select class="form-control" id="os2display-poster--select-single-places" ng-model="searchPlace" style="width: 100%"></select>
+              </div>
+              <div class="form-group" ng-show="typeSelect === 'searchTag'">
+                <label for="os2display-poster--select-single-tags" class="sr-only">Tag</label>
+                <select class="form-control" id="os2display-poster--select-single-tags" ng-model="searchTag" style="width: 100%"></select>
               </div>
             </div>
             <div class="col-2">
@@ -151,7 +166,7 @@
               </a>
             </li>
             <li class="page-item" ng-repeat="page in getPagerPages()" ng-class="{'active': pager.currentPage === page}" style="cursor: pointer">
-              <a class="page-link" ng-click="search(searchName, searchUrl, page)"> {{page}} </a>
+              <a class="page-link" ng-click="search(typeSelect, searchName, searchUrl, searchOrganizer, searchOrganizer, searchPlace, page)"> {{page}} </a>
             </li>
             <li class="page-item">
               <a class="page-link" ng-click="pagerForward()" aria-label="Frem" style="cursor: pointer">

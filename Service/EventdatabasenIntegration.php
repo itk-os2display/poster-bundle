@@ -69,6 +69,22 @@ class EventdatabasenIntegration
             unset($query['url']);
         }
 
+        if (isset($query['organizer'])) {
+            $organizer = $query['organizer'];
+            unset($query['organizer']);
+            $query['organizer.id'] = $organizer;
+        }
+        if (isset($query['place'])) {
+            $place = $query['place'];
+            unset($query['place']);
+            $query['occurrences.place.id'] = $place;
+        }
+        if (isset($query['tag'])) {
+            $tag = $query['tag'];
+            unset($query['tag']);
+            $query['tags'] = [$tag];
+        }
+
         $query['occurrences.startDate'] = ['after' => date('Y-m-d')];
         $query['items_per_page'] = 10;
 

@@ -42,12 +42,37 @@ angular.module('posterModule').directive('posterToolSingle', [
                 tool: '='
             },
             link: function (scope) {
-                scope.typeSelect = 'searchName';
+                scope.typeSelect = 'searchPlace';
                 scope.displayOverrides = false;
 
                 if (!scope.slide.options.overrides) {
                     scope.slide.options.overrides = {};
                 }
+
+                function setupFilter(type) {
+                    var element = jQuery('#os2display-poster--select-single-' + type);
+
+                    element.select2({
+                        ajax: {
+                            url: '/api/os2display_poster/search',
+                            dataType: 'json',
+                            delay: 500,
+                            data: function (params) {
+                                return {
+                                    name: params.term,
+                                    page: params.page || 1,
+                                    type: type
+                                };
+                            }
+                        },
+                        minimumInputLength: 1
+                    });
+                }
+                $timeout(function () {
+                    setupFilter('organizers');
+                    setupFilter('places');
+                    setupFilter('tags');
+                }, 1000);
 
                 scope.toggleOverrides = function () {
                     scope.displayOverrides = !scope.displayOverrides;
@@ -90,7 +115,7 @@ angular.module('posterModule').directive('posterToolSingle', [
                     };
                 };
 
-                scope.search = function (searchName, searchUrl, page) {
+                scope.search = function (typeSelect, searchName, searchUrl, searchOrganizer, searchPlace, searchTag, page) {
                     scope.showSpinner = true;
                     scope.displayEvent = null;
                     scope.events = null;
@@ -101,12 +126,26 @@ angular.module('posterModule').directive('posterToolSingle', [
                         params.page = page;
                     }
 
-                    if (scope.typeSelect === 'searchName') {
+                    if (typeSelect === 'searchName') {
                         params.name = searchName;
                     }
-                    else if (scope.typeSelect === 'searchUrl') {
+                    else if (typeSelect === 'searchUrl') {
                         params.url = searchUrl;
                     }
+                    else if (typeSelect === 'searchOrganizer') {
+                        var organizerOption = jQuery('#os2display-poster--select-single-organizers option:selected');
+                        params.organizer = organizerOption.val();
+                    }
+                    else if (typeSelect === 'searchPlace') {
+                        var placeOption = jQuery('#os2display-poster--select-single-places option:selected');
+                        params.place = placeOption.val();
+                    }
+                    else if (typeSelect === 'searchTag') {
+                        var tagOption = jQuery('#os2display-poster--select-single-tags option:selected');
+                        params.tag = tagOption.text();
+                    }
+
+                    console.log(params);
 
                     $http.get('/api/os2display_poster/events', {
                         params: params
