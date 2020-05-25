@@ -42,7 +42,7 @@ angular.module('posterModule').directive('posterToolSingle', [
                 tool: '='
             },
             link: function (scope) {
-                scope.typeSelect = 'searchPlace';
+                scope.typeSelect = 'searchName';
                 scope.displayOverrides = false;
 
                 if (!scope.slide.options.overrides) {
