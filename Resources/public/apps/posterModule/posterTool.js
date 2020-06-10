@@ -145,8 +145,6 @@ angular.module('posterModule').directive('posterToolSingle', [
                         params.tag = tagOption.text();
                     }
 
-                    console.log(params);
-
                     $http.get('/api/os2display_poster/events', {
                         params: params
                     }).then(
@@ -237,21 +235,21 @@ angular.module('posterModule').directive('posterToolSubscription', [
 
                         for (var tag in selections.selectedTags) {
                             tag = selections.selectedTags[tag];
-                            if (tag !== null) {
+                            if (tag !== undefined && tag !== null) {
                                 search.tags.push(tag.id);
                             }
                         }
 
                         for (var org in selections.selectedOrganizers) {
                             org = selections.selectedOrganizers[org];
-                            if (org !== null) {
+                            if (org !== undefined && org !== null) {
                                 search.organizers.push(org.id);
                             }
                         }
 
                         for (var place in selections.selectedPlaces) {
                             place = selections.selectedPlaces[place];
-                            if (place !== null) {
+                            if (place !== undefined && place !== null) {
                                 search.places.push(place.id);
                             }
                         }

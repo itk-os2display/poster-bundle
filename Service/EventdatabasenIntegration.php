@@ -5,11 +5,15 @@ namespace Os2Display\PosterBundle\Service;
 use Doctrine\Common\Cache\CacheProvider;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\MessageFormatter;
+use GuzzleHttp\Middleware;
 use Os2Display\PosterBundle\Events\GetEvents;
 use Os2Display\PosterBundle\Events\GetEvent;
 use Os2Display\PosterBundle\Events\GetOccurrence;
 use Os2Display\PosterBundle\Events\SearchByType;
 use Os2Display\PosterBundle\Events\SearchEvents;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class EventdatabasenIntegration.
@@ -21,6 +25,7 @@ class EventdatabasenIntegration
     private $enabled;
     private $url;
     private $cache;
+    private $logger;
 
     /**
      * EventdatabasenIntegration constructor.
@@ -28,12 +33,14 @@ class EventdatabasenIntegration
      * @param $enabled
      * @param $url
      * @param \Doctrine\Common\Cache\CacheProvider $cache
+     * @param \Psr\Log\LoggerInterface $logger
      */
-    public function __construct($enabled, $url, CacheProvider $cache)
+    public function __construct($enabled, $url, CacheProvider $cache, LoggerInterface $logger)
     {
         $this->enabled = $enabled;
         $this->url = $url;
         $this->cache = $cache;
+        $this->logger = $logger;
     }
 
     /**
@@ -231,15 +238,15 @@ class EventdatabasenIntegration
         $query = $event->getQuery();
 
         $params = [
-            'timeout' => 3,
+            'timeout' => 10,
             'query' => [
                 'items_per_page' => 5,
                 'order' => [
                     'occurrences.startDate' => 'asc'
                 ],
                 'occurrences.startDate' => [
-                    'after' => (new \DateTime())->format('c')
-                ]
+                    'after' => (new \DateTime())->format('c'),
+                ],
             ]
         ];
 
@@ -256,6 +263,16 @@ class EventdatabasenIntegration
         if (isset($query['tags'])) {
             $params['query']['tags'] = $query['tags'];
         }
+
+        $stack = HandlerStack::create();
+        $stack->push(
+            Middleware::log(
+                $this->logger,
+                new MessageFormatter()
+            )
+        );
+
+        $params['handler'] = $stack;
 
         $client = new Client();
         $requestResult = $client->request(
@@ -284,11 +301,6 @@ class EventdatabasenIntegration
                 $image = $el->images->large ?? $el->image ?? null;
                 $imageSmall = $el->images->small ?? null;
 
-                $startDate = $el->occurrences[0]->startDate ?? null;
-                $endDate = $el->occurrences[0]->endDate ?? null;
-
-                $place = $el->occurrences[0]->place->name ?? null;
-
                 $organizer = $el->organizer->name ?? null;
 
                 $newObject = (object)[
@@ -297,27 +309,38 @@ class EventdatabasenIntegration
                     'name' => $text,
                     'image' => $image,
                     'imageSmall' => $imageSmall,
-                    'startDate' => $startDate,
-                    'endDate' => $endDate,
-                    'place' => $place,
                     'organizer' => $organizer,
                 ];
 
                 if (!empty($el->occurrences)) {
-                    $firstOccurrence = $el->occurrences[0];
+                    // Find next coming occurrence.
+                    $now = new \DateTime();
+
+                    $selectedOccurrence = null;
+                    $selectedOccurrenceStart = null;
+
+                    foreach ($el->occurrences as $occurrence) {
+                        $occurrenceStart = new \DateTime($occurrence->{'startDate'});
+                        if ($occurrenceStart >= $now) {
+                            if ($selectedOccurrence === null || $occurrenceStart < $selectedOccurrenceStart) {
+                                $selectedOccurrence = $occurrence;
+                                $selectedOccurrenceStart = $occurrenceStart;
+                            }
+                        }
+                    }
 
                     $eventOccurrence = (object) [
                         'eventId' => $id,
-                        'occurrenceId' => $firstOccurrence->{'@id'},
+                        'occurrenceId' => $selectedOccurrence->{'@id'},
                         'ticketPurchaseUrl' => $el->{'ticketPurchaseUrl'},
                         'excerpt' =>  $el->{'excerpt'},
                         'name' =>  $el->{'name'},
                         'url' =>  $el->{'url'},
                         'image' =>  $image,
-                        'startDate' =>  $firstOccurrence->{'startDate'},
-                        'endDate' =>  $firstOccurrence->{'endDate'},
-                        'ticketPriceRange' =>  $firstOccurrence->{'ticketPriceRange'},
-                        'eventStatusText' =>  $firstOccurrence->{'eventStatusText'},
+                        'startDate' =>  $selectedOccurrence->{'startDate'},
+                        'endDate' =>  $selectedOccurrence->{'endDate'},
+                        'ticketPriceRange' =>  $selectedOccurrence->{'ticketPriceRange'},
+                        'eventStatusText' =>  $selectedOccurrence->{'eventStatusText'},
                     ];
 
                     if (isset($results->place)) {
@@ -331,6 +354,10 @@ class EventdatabasenIntegration
                         ];
                     }
                     $newObject->occurrence = $eventOccurrence;
+
+                    $newObject->startDate = $eventOccurrence->startDate;
+                    $newObject->endDate = $eventOccurrence->endDate;
+                    $newObject->place = $eventOccurrence->place->name ?? null;
                 }
 
                 $carry[] = $newObject;
