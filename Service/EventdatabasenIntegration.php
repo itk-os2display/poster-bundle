@@ -242,9 +242,9 @@ class EventdatabasenIntegration
             'query' => [
                 'items_per_page' => 5,
                 'order' => [
-                    'occurrences.startDate' => 'asc'
+                    'startDate' => 'asc'
                 ],
-                'occurrences.startDate' => [
+                'startDate' => [
                     'after' => (new \DateTime())->format('c'),
                 ],
             ]
@@ -255,13 +255,13 @@ class EventdatabasenIntegration
         }
 
         if (isset($query['organizers'])) {
-            $params['query']['organizer.id'] = $query['organizers'];
+            $params['query']['event.organizer.id'] = $query['organizers'];
         }
         if (isset($query['places'])) {
-            $params['query']['occurrences.place.id'] = $query['places'];
+            $params['query']['place.id'] = $query['places'];
         }
         if (isset($query['tags'])) {
-            $params['query']['tags'] = $query['tags'];
+            $params['query']['event.tags'] = $query['tags'];
         }
 
         $stack = HandlerStack::create();
@@ -277,7 +277,7 @@ class EventdatabasenIntegration
         $client = new Client();
         $requestResult = $client->request(
             'GET',
-            $this->url . '/api/events',
+            $this->url . '/api/occurrences',
             $params
         );
 
@@ -293,15 +293,21 @@ class EventdatabasenIntegration
         $res['results'] = array_reduce(
             $res['results'],
             function ($carry, $el) {
-                $split = explode('/', $el->{'@id'});
+                $split = explode('/', $el->event->{'@id'});
                 $id = end($split);
 
-                $text = $el->name ?? null;
+                $text = $el->event->name ?? null;
 
-                $image = $el->images->large ?? $el->image ?? null;
-                $imageSmall = $el->images->small ?? null;
+                $image = $el->event->images->large ?? $el->image ?? null;
+                $imageSmall = $el->event->images->small ?? null;
 
-                $organizer = $el->organizer->name ?? null;
+                // Get organizer name.
+                $client = new Client();
+                $requestResult = $client->request(
+                    'GET',
+                    $this->url . $el->event->organizer
+                );
+                $organizer = json_decode($requestResult->getBody()->getContents());
 
                 $newObject = (object)[
                     'id' => $id,
@@ -309,56 +315,35 @@ class EventdatabasenIntegration
                     'name' => $text,
                     'image' => $image,
                     'imageSmall' => $imageSmall,
-                    'organizer' => $organizer,
+                    'organizer' => $organizer->name,
                 ];
 
-                if (!empty($el->occurrences)) {
-                    // Find next coming occurrence.
-                    $now = new \DateTime();
+                $eventOccurrence = (object) [
+                    'eventId' => $id,
+                    'occurrenceId' => $el->{'@id'},
+                    'ticketPurchaseUrl' => $el->event->{'ticketPurchaseUrl'},
+                    'excerpt' =>  $el->event->{'excerpt'},
+                    'name' =>  $el->event->{'name'},
+                    'url' =>  $el->event->{'url'},
+                    'image' =>  $image,
+                    'startDate' =>  $el->{'startDate'},
+                    'endDate' =>  $el->{'endDate'},
+                    'ticketPriceRange' =>  $el->{'ticketPriceRange'},
+                    'eventStatusText' =>  $el->{'eventStatusText'},
+                    'place' => (object)[
+                        'name' => $el->place->name,
+                        'streetAddress' => $el->place->streetAddress,
+                        'addressLocality' => $el->place->addressLocality,
+                        'postalCode' => $el->place->postalCode,
+                        'image' => $el->place->image,
+                        'telephone' => $el->place->telephone,
+                    ],
+                ];
 
-                    $selectedOccurrence = null;
-                    $selectedOccurrenceStart = null;
-
-                    foreach ($el->occurrences as $occurrence) {
-                        $occurrenceStart = new \DateTime($occurrence->{'startDate'});
-                        if ($occurrenceStart >= $now) {
-                            if ($selectedOccurrence === null || $occurrenceStart < $selectedOccurrenceStart) {
-                                $selectedOccurrence = $occurrence;
-                                $selectedOccurrenceStart = $occurrenceStart;
-                            }
-                        }
-                    }
-
-                    $eventOccurrence = (object) [
-                        'eventId' => $id,
-                        'occurrenceId' => $selectedOccurrence->{'@id'},
-                        'ticketPurchaseUrl' => $el->{'ticketPurchaseUrl'},
-                        'excerpt' =>  $el->{'excerpt'},
-                        'name' =>  $el->{'name'},
-                        'url' =>  $el->{'url'},
-                        'image' =>  $image,
-                        'startDate' =>  $selectedOccurrence->{'startDate'},
-                        'endDate' =>  $selectedOccurrence->{'endDate'},
-                        'ticketPriceRange' =>  $selectedOccurrence->{'ticketPriceRange'},
-                        'eventStatusText' =>  $selectedOccurrence->{'eventStatusText'},
-                    ];
-
-                    if (isset($results->place)) {
-                        $eventOccurrence->place = (object)[
-                            'name' => $el->place->name,
-                            'streetAddress' => $el->place->streetAddress,
-                            'addressLocality' => $el->place->addressLocality,
-                            'postalCode' => $el->place->postalCode,
-                            'image' => $el->place->image,
-                            'telephone' => $el->place->telephone,
-                        ];
-                    }
-                    $newObject->occurrence = $eventOccurrence;
-
-                    $newObject->startDate = $eventOccurrence->startDate;
-                    $newObject->endDate = $eventOccurrence->endDate;
-                    $newObject->place = $eventOccurrence->place->name ?? null;
-                }
+                $newObject->occurrence = $eventOccurrence;
+                $newObject->startDate = $eventOccurrence->startDate;
+                $newObject->endDate = $eventOccurrence->endDate;
+                $newObject->place = $eventOccurrence->place->name ?? null;
 
                 $carry[] = $newObject;
 

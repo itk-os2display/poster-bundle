@@ -271,6 +271,7 @@ angular.module('posterModule').directive('posterToolSubscription', [
                                 scope.loadingSearchResults = false;
                             },
                             function (err) {
+                                scope.loadingSearchResults = false;
                                 console.log('error', err);
                             }
                         )
