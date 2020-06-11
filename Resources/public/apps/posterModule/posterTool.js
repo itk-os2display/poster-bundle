@@ -312,8 +312,11 @@ angular.module('posterModule').directive('posterToolSubscription', [
                     // Select previous selections.
                     for (var selection in selectionArray) {
                         selection = selectionArray[selection];
-                        var newOption = new Option(selection.text, selection.id, true, true);
-                        element.append(newOption).trigger('change');
+
+                        if (selection) {
+                            var newOption = new Option(selection.text, selection.id, true, true);
+                            element.append(newOption).trigger('change');
+                        }
                     }
                 }
 
