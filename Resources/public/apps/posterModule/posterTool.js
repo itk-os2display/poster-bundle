@@ -236,7 +236,7 @@ angular.module('posterModule').directive('posterToolSubscription', [
                         for (var tag in selections.selectedTags) {
                             tag = selections.selectedTags[tag];
                             if (tag !== undefined && tag !== null) {
-                                search.tags.push(tag.id);
+                                search.tags.push(tag.text);
                             }
                         }
 
