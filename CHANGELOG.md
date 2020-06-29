@@ -1,5 +1,9 @@
 # itk-os2display/poster-bundle
 
+## 1.2.1
+
+* Minified js.
+
 ## 1.2.0
 
 * Added subscription mode for posters.
