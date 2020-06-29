@@ -1,5 +1,5 @@
 <div class="poster-base" data-ng-style="{'font-size': theStyle.fontsize, 'width': theStyle.width, 'height': theStyle.height }">
-    <div class="tpl-image-area" data-ng-style="{'background-image': 'url(' + ikSlide.options.data.image + ')'}">
+    <div class="tpl-image-area ng-animate-disabled" data-ng-style="{'background-image': 'url(' + ikSlide.options.data.image + ')'}" ng-class="{'fadeout': ikSlide.fadeout, 'fadein': ikSlide.fadeout === false}">
     </div>
     <div class="tpl-header-area">
         <div class="tpl-header-area-center">

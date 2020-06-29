@@ -1,6 +1,13 @@
+# Uses:
+# https://select2.org/
+
 assets:
-#    css:
-#        - bundles/os2displayposter/assets/build/os2displayposter.min.css
+    css:
+        - bundles/os2displayposter/assets/select2.min.css
+    js:
+        - bundles/os2displayposter/assets/select2.min.js
+    js_prod_assets:
+        - bundles/os2displayposter/assets/select2.min.js
     js_prod:
         - bundles/os2displayposter/assets/build/os2displayposter.min.js
 
@@ -9,7 +16,6 @@ modules:
         files:
             - bundles/os2displayposter/apps/posterModule/module.js
             - bundles/os2displayposter/apps/posterModule/posterTool.js
-            - bundles/os2displayposter/apps/posterModule/posterEditTextsTool.js
 
 apps:
     # Inject into administration app to enable access to tool from admin.

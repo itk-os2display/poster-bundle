@@ -113,3 +113,14 @@
     max-height: 150%;
     margin: 0 0 0 auto;
 }
+
+.poster-base .fadeout {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s .2s, opacity .2s ease-in;
+}
+.poster-base .fadein {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .4s ease-out;
+}

@@ -7,11 +7,13 @@ services:
 
     os2display.poster.eventdatabasen:
         class: Os2Display\PosterBundle\Service\EventdatabasenIntegration
-        arguments: [false, '']
+        arguments: [false, '', '@os2display.poster.cache', '@monolog.logger']
         tags:
             - { name: kernel.event_listener, event: os2display.poster.get_event, method: getEvent }
             - { name: kernel.event_listener, event: os2display.poster.get_events, method: getEvents }
             - { name: kernel.event_listener, event: os2display.poster.get_occurrence, method: getOccurrence }
+            - { name: kernel.event_listener, event: os2display.poster.search_events, method: searchEvents }
+            - { name: kernel.event_listener, event: os2display.poster.search_by_type, method: searchByType }
 
     os2display.poster.cache:
         class: Doctrine\Common\Cache\FilesystemCache
