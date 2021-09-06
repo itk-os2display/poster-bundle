@@ -82,7 +82,6 @@ if (!window.slideFunctions['posterSlide']) {
         region.progressBar.start(progressBarDuration);
 
         region.$timeout(function () {
-          console.log(slide.options.data.name);
           next();
         }, duration * 1000);
       }, region.fadeTime);

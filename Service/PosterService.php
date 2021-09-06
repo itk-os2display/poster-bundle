@@ -119,6 +119,9 @@ class PosterService
                     if (isset($occurrences[0])) {
                         $options['data'] = $occurrences[0];
                     }
+                    else {
+                        $options['data'] = null;
+                    }
                 }
                 // Single type (or implicitly by type not being set).
                 else if (isset($options['data']['occurrenceId'])) {
