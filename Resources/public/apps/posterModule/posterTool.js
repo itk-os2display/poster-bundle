@@ -266,6 +266,9 @@ angular.module('posterModule').directive('posterToolSubscription', [
                                     if (scope.subscription.foundEvents.length > 0) {
                                         scope.slide.options.data = scope.subscription.foundEvents[0].occurrence;
                                     }
+                                    else {
+                                        scope.slide.options.data = null;
+                                    }
                                 });
 
                                 scope.loadingSearchResults = false;
