@@ -21,6 +21,7 @@ use Psr\Log\LoggerInterface;
 class EventdatabasenIntegration
 {
     const NAME = 'Eventdatabasen';
+    const API_TIMEOUT = 10;
 
     private $enabled;
     private $url;
@@ -102,7 +103,7 @@ class EventdatabasenIntegration
                 $this->url . '/api/events',
                 [
                     'query' => $query,
-                    'timeout' => 2,
+                    'timeout' => self::API_TIMEOUT,
                 ]
             );
 
@@ -142,7 +143,7 @@ class EventdatabasenIntegration
                 'GET',
                 $this->url . $id,
                 [
-                    'timeout' => 2,
+                    'timeout' => self::API_TIMEOUT,
                 ]
             );
 
@@ -180,7 +181,7 @@ class EventdatabasenIntegration
                 'GET',
                 $this->url . $occurrenceId,
                 [
-                    'timeout' => 2,
+                    'timeout' => self::API_TIMEOUT,
                 ]
             );
 
@@ -238,7 +239,7 @@ class EventdatabasenIntegration
         $query = $event->getQuery();
 
         $params = [
-            'timeout' => 10,
+            'timeout' => self::API_TIMEOUT,
             'query' => [
                 'items_per_page' => 5,
                 'order' => [
@@ -397,7 +398,10 @@ class EventdatabasenIntegration
 
         $client = new Client();
 
-        $params = ['timeout' => 2, 'query' => []];
+        $params = [
+            'timeout' => self::API_TIMEOUT,
+            'query' => []
+        ];
 
         if ($query !== null) {
             $params['query'] = $query;
@@ -501,7 +505,9 @@ class EventdatabasenIntegration
 
         $result = [];
 
-        $params = ['timeout' => 2];
+        $params = [
+            'timeout' => self::API_TIMEOUT,
+        ];
 
         if ($search !== null) {
             $params['query'] = [
@@ -524,7 +530,9 @@ class EventdatabasenIntegration
             $res = $client->request(
                 'GET',
                 $this->url.$res->{'hydra:view'}->{'hydra:next'},
-                ['timeout' => 2]
+                [
+                    'timeout' => self::API_TIMEOUT,
+                ]
             );
 
             $res = json_decode($res->getBody()->getContents());
